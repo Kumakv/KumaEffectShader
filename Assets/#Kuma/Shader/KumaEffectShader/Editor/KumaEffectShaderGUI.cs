@@ -458,6 +458,81 @@ public class KumaEffectShaderGUI : ShaderGUI
             _DstBlend.floatValue = 1.0f;
         }
 
+        List<ParticleSystemVertexStream> streams = new List<ParticleSystemVertexStream>();
+        streams.Add(ParticleSystemVertexStream.Position);
+        streams.Add(ParticleSystemVertexStream.Normal);
+        streams.Add(ParticleSystemVertexStream.Color);
+        streams.Add(ParticleSystemVertexStream.UV);
+        streams.Add(ParticleSystemVertexStream.StableRandomXY);
+        streams.Add(ParticleSystemVertexStream.Custom1XYZW);
+        streams.Add(ParticleSystemVertexStream.AgePercent);
+        streams.Add(ParticleSystemVertexStream.Custom2XYZW);
+            
+        string warnings = "";
+		List<ParticleSystemVertexStream> rendererStreams = new List<ParticleSystemVertexStream>();
+		foreach (ParticleSystemRenderer renderer in m_RenderersUsingThisMaterial)
+        {
+			if (renderer != null)
+            {
+			    renderer.GetActiveVertexStreams(rendererStreams);
+                renderer.GetActiveTrailVertexStreams(rendererStreams);
+			    bool streamsValid = rendererStreams.SequenceEqual(streams);
+			    if (!streamsValid) warnings += "  " + renderer.name + "\n";
+			}
+		}
+        EditorGUILayout.Space();
+        EditorGUI.BeginChangeCheck();
+        // Vertex Stream Handler
+		if (warnings != "")
+        {
+			EditorGUILayout.HelpBox("Incorrect or missing vertex streams detected:\n" + warnings, MessageType.Warning, true);
+			if (GUILayout.Button(applyStreamsText, EditorStyles.miniButton))
+            {
+				foreach (ParticleSystemRenderer renderer in m_RenderersUsingThisMaterial)
+                {
+					if (renderer != null)
+                    {
+						if (renderer != null)
+                        {
+							renderer.SetActiveVertexStreams(streams);
+                            renderer.SetActiveTrailVertexStreams(streams);
+
+                            //CustomDataの設定
+                            var particle = renderer.GetComponent<ParticleSystem>();
+                            var customData = particle.customData;
+                            customData.enabled = true;
+
+                            
+                            particle.GetCustomParticleData(customValue, ParticleSystemCustomData.Custom2);
+
+                            //CustomData1の設定
+                            customData.SetMode(ParticleSystemCustomData.Custom1, UnityEngine.ParticleSystemCustomDataMode.Color);
+                            //CustomData2の設定
+                            customData.SetMode(ParticleSystemCustomData.Custom2, UnityEngine.ParticleSystemCustomDataMode.Vector);
+
+                            for(int i = 0; i < customValue.Count; i++){
+                                if(customValue[i].z == 0.0f){
+                                customData.SetVector(ParticleSystemCustomData.Custom2, 2, 1f);
+                                } else {
+                                customData.SetVector(ParticleSystemCustomData.Custom2, 2, customValue[i].z);
+                                }
+                            }
+                            
+                            
+                            
+                            
+                        }
+					}
+				}
+
+                
+			}
+			EditorGUILayout.Space();
+		}
+
+        EditorGUILayout.Space();
+        
+
         //**************************************************
         //****** Main Tex **********************************
         //**************************************************
@@ -1036,79 +1111,7 @@ public class KumaEffectShaderGUI : ShaderGUI
         EditorGUILayout.Space();
         EditorGUILayout.Space();
 
-        List<ParticleSystemVertexStream> streams = new List<ParticleSystemVertexStream>();
-        streams.Add(ParticleSystemVertexStream.Position);
-        streams.Add(ParticleSystemVertexStream.Normal);
-        streams.Add(ParticleSystemVertexStream.Color);
-        streams.Add(ParticleSystemVertexStream.UV);
-        streams.Add(ParticleSystemVertexStream.StableRandomXY);
-        streams.Add(ParticleSystemVertexStream.Custom1XYZW);
-        streams.Add(ParticleSystemVertexStream.AgePercent);
-        streams.Add(ParticleSystemVertexStream.Custom2XYZW);
-            
-        string warnings = "";
-		List<ParticleSystemVertexStream> rendererStreams = new List<ParticleSystemVertexStream>();
-		foreach (ParticleSystemRenderer renderer in m_RenderersUsingThisMaterial)
-        {
-			if (renderer != null)
-            {
-			    renderer.GetActiveVertexStreams(rendererStreams);
-                renderer.GetActiveTrailVertexStreams(rendererStreams);
-			    bool streamsValid = rendererStreams.SequenceEqual(streams);
-			    if (!streamsValid) warnings += "  " + renderer.name + "\n";
-			}
-		}
-        EditorGUI.BeginChangeCheck();
-        // Vertex Stream Handler
-		if (warnings != "")
-        {
-			EditorGUILayout.HelpBox("Incorrect or missing vertex streams detected:\n" + warnings, MessageType.Warning, true);
-			if (GUILayout.Button(applyStreamsText, EditorStyles.miniButton))
-            {
-				foreach (ParticleSystemRenderer renderer in m_RenderersUsingThisMaterial)
-                {
-					if (renderer != null)
-                    {
-						if (renderer != null)
-                        {
-							renderer.SetActiveVertexStreams(streams);
-                            renderer.SetActiveTrailVertexStreams(streams);
-
-                            //CustomDataの設定
-                            var particle = renderer.GetComponent<ParticleSystem>();
-                            var customData = particle.customData;
-                            customData.enabled = true;
-
-                            
-                            particle.GetCustomParticleData(customValue, ParticleSystemCustomData.Custom2);
-
-                            //CustomData1の設定
-                            customData.SetMode(ParticleSystemCustomData.Custom1, UnityEngine.ParticleSystemCustomDataMode.Color);
-                            //CustomData2の設定
-                            customData.SetMode(ParticleSystemCustomData.Custom2, UnityEngine.ParticleSystemCustomDataMode.Vector);
-
-                            for(int i = 0; i < customValue.Count; i++){
-                                if(customValue[i].z == 0.0f){
-                                customData.SetVector(ParticleSystemCustomData.Custom2, 2, 1f);
-                                } else {
-                                customData.SetVector(ParticleSystemCustomData.Custom2, 2, customValue[i].z);
-                                }
-                            }
-                            
-                            
-                            
-                            
-                        }
-					}
-				}
-
-                
-			}
-			EditorGUILayout.Space();
-		}
-
-        EditorGUILayout.Space();
-        EditorGUILayout.Space();
+        
         void SetFoldout(ref bool foldoutSettings, string title)
         {
             using (new EditorGUILayout.VerticalScope(boxStyle))
