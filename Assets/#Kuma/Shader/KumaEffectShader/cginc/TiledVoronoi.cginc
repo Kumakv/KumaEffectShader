@@ -1,3 +1,5 @@
+// ref : https://qiita.com/yuji_yasuhara/items/cfe4b08e7438eca06eda
+
 inline float2 modulo(float2 value, float2 scale)
 {
     return floor((value%scale+scale)%scale);

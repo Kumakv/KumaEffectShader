@@ -30,6 +30,13 @@ public class KumaEffectShaderGUI : ShaderGUI
     protected MaterialProperty _MatCapTex;
     protected MaterialProperty _matcapIntensity;
 
+    protected MaterialProperty _MainPolarCenter;
+    protected MaterialProperty _isMainPolar;
+
+    protected MaterialProperty _GradientMap;
+    protected MaterialProperty _GradientColor;
+    protected MaterialProperty _TestFloat;
+
     //Noise1
     protected MaterialProperty _Noise1;
     protected MaterialProperty _Noise1Power;
@@ -210,6 +217,7 @@ public class KumaEffectShaderGUI : ShaderGUI
     public static bool _dissolveFoldout = true;
     public static bool _fresnelFoldout = true;
     public static bool _ChromaticCausticsFoldout = true;
+    public static bool _GradientColorFoldout = true;
     public static bool _shaderShapeFoldout = true;
     public static bool _vertexOffsetFoldout = true;
     public static bool _softParticleFoldout = true;
@@ -223,6 +231,7 @@ public class KumaEffectShaderGUI : ShaderGUI
     const string BlendingPropertyName = "_Blending";
     const string SrcBlendPropertyName = "_SrcBlend";
     const string DstBlendPropertyName = "_DstBlend";
+
 
     private List<Vector4> customValue = new List<Vector4>();
     
@@ -244,6 +253,13 @@ public class KumaEffectShaderGUI : ShaderGUI
          _useMatCap = FindProperty("_useMatCap", props);
          _MatCapTex = FindProperty("_MatCapTex", props);
          _matcapIntensity = FindProperty("_matcapIntensity", props);
+
+         _MainPolarCenter = FindProperty("_MainPolarCenter", props);
+         _isMainPolar = FindProperty("_isMainPolar", props);
+
+         _GradientMap = FindProperty("_GradientMap", props);
+         _GradientColor = FindProperty("_GradientColor", props);
+         _TestFloat = FindProperty("_TestFloat", props);
 
          _useNoise1 = FindProperty("_useNoise1", props);
          _Noise1 = FindProperty("_Noise1", props);
@@ -346,6 +362,7 @@ public class KumaEffectShaderGUI : ShaderGUI
          _VoronoiPanning = FindProperty("_VoronoiPanning", props);
          _VoronoiIntensity = FindProperty("_VoronoiIntensity", props);
 
+
          //Shader Shapes
          _useDust = FindProperty("_useDust", props);
          _Size = FindProperty("_Size", props);
@@ -366,6 +383,7 @@ public class KumaEffectShaderGUI : ShaderGUI
          _HorizontalBorder = FindProperty("_HorizontalBorder", props);
          _VerticalLength = FindProperty("_VerticalLength", props);
          _VerticalBorder = FindProperty("_VerticalBorder", props);
+         
 
          //Vertex Offset
          _useVertexOffset = FindProperty("_useVertexOffset", props);
@@ -551,13 +569,20 @@ public class KumaEffectShaderGUI : ShaderGUI
                         _MainOffset.vectorValue = _MainOffsetVec;
                     }
                 }
-                EditorGUILayout.Space();
                 materialEditor.ShaderProperty(_isCustomIntensity,Styles.customIntensity);
                 GUILayout.Label("(CustomData2.z)", EditorStyles.label);
-                EditorGUILayout.Space();
                 materialEditor.ShaderProperty(_isCustomDataOffset,Styles.customOffset);
                 GUILayout.Label("(CustomData2.xy)", EditorStyles.label);
-                EditorGUILayout.Space();
+                materialEditor.ShaderProperty(_isMainPolar,Styles.mainPolar);
+                if(_isMainPolar.floatValue == 1.0){
+                    Vector4 _mainCenterVec = EditorGUILayout.Vector2Field("Center", _MainPolarCenter.vectorValue);
+                    if(EditorGUI.EndChangeCheck()){
+                        _MainPolarCenter.vectorValue = _mainCenterVec;
+                    }
+                }
+
+
+
 
                 EditorGUILayout.Space();
                 EditorGUILayout.Space();
@@ -833,6 +858,7 @@ public class KumaEffectShaderGUI : ShaderGUI
                         materialEditor.RangeProperty(_AFNoisePower, "Power");
                     }else {
                         materialEditor.TexturePropertySingleLine(new GUIContent("AlphaFade Map"), _AlphaFadeMap);
+                        materialEditor.RangeProperty(_AFNoisePower, "Power");
                     }
                     EditorGUI.BeginChangeCheck();
                     Vector4 _TilingVec2 = EditorGUILayout.Vector2Field("Tiling", _DissolveTiling.vectorValue);
@@ -936,6 +962,7 @@ public class KumaEffectShaderGUI : ShaderGUI
                 EditorGUILayout.Space();
             }
         }
+
         //**************************************************
         //****** Shader Shapes ***************************
         //**************************************************
@@ -1136,6 +1163,7 @@ public class KumaEffectShaderGUI : ShaderGUI
         }
     
         materialEditor.RenderQueueField();
+        EditorGUILayout.Space();
         void CacheRenderersUsingThisMaterial(Material material){
 		    m_RenderersUsingThisMaterial.Clear();
 
@@ -1160,6 +1188,7 @@ public class KumaEffectShaderGUI : ShaderGUI
         public static readonly GUIContent Noise2 = new GUIContent("Use Noise2");
         public static readonly GUIContent useDissolve = new GUIContent("Use Dissolve");
         public static readonly GUIContent AlphaFade = new GUIContent("Use AlphaFade");
+        public static readonly GUIContent mainPolar = new GUIContent("Use Main Polar");
 
         public static readonly GUIContent distort = new GUIContent("Enable UVDistort 1");
         public static readonly GUIContent distort2 = new GUIContent("Enable UVDistort 2");
@@ -1170,6 +1199,8 @@ public class KumaEffectShaderGUI : ShaderGUI
         public static readonly GUIContent inverse = new GUIContent("Inverse");
 
         public static readonly GUIContent CACaustics = new GUIContent("Use Chromatic Caustics");
+
+        public static readonly GUIContent GradientColor = new GUIContent("Use Gradient Color");
 
         public static readonly GUIContent Dust = new GUIContent("Use Dust Shape");
         public static readonly GUIContent Circle = new GUIContent("Use Circle Shape");

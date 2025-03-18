@@ -1,3 +1,5 @@
+// ref : https://qiita.com/yuji_yasuhara/items/cfe4b08e7438eca06eda
+
 float2 Unity_GradientNoise_Dir_float(float2 p, float Period)
 {
     p = modulo(p, Period);
