@@ -1,5 +1,10 @@
 // Made with Amplify Shader Editor v1.9.6.3
 // Available at the Unity Asset Store - http://u3d.as/y3X 
+
+// Copyright © 2024 Kuma_kv
+// License: http://opensource.org/licenses/MIT
+// GitHub: https://github.com/Kumakv/KumaEffectShader
+// Version: 1.6.1 (2025/03/21)
 Shader "Kuma/KumaEffect"
 {
 	Properties
