@@ -80,6 +80,15 @@ public class KumaEffectShaderGUI : ShaderGUI
     protected MaterialProperty _useGenerateNoise2;
     protected MaterialProperty _UVDistort2Tiling;
 
+    //Main Mask Distortion
+    protected MaterialProperty _UVDistortionMMap;
+    protected MaterialProperty _DistortionMIntensity;
+    protected MaterialProperty _GenerateNoiseMStrength;
+    protected MaterialProperty _UVDistortionMTiling;
+    protected MaterialProperty _UVDistortionMPanning;
+    protected MaterialProperty _useGenerateNoiseM;
+    protected MaterialProperty _isUVDistortionM;
+
     //Distort Dissolve
     protected MaterialProperty _isUVDistortionD;
     protected MaterialProperty _UVDistortionDMap;
@@ -133,6 +142,8 @@ public class KumaEffectShaderGUI : ShaderGUI
     protected MaterialProperty _AlphaFadeThreshold;
     protected MaterialProperty _StartAlphaFade;
     protected MaterialProperty _AlphaFadeMap;
+    protected MaterialProperty _AlphaFadeTiling;
+    protected MaterialProperty _AlphaFadePanning;
 
 
 
@@ -144,6 +155,7 @@ public class KumaEffectShaderGUI : ShaderGUI
     protected MaterialProperty _TrailEdgeDissolveMap;
     protected MaterialProperty _TrailEdgeDissolveScroll;
     protected MaterialProperty _TrailEdgeDissolveTilling;
+    protected MaterialProperty _ToggleXY;
 
     //Chromatic Caustics
     protected MaterialProperty _useCACaustics;
@@ -308,6 +320,15 @@ public class KumaEffectShaderGUI : ShaderGUI
          _useGenerateNoiseD = FindProperty("_useGenerateNoiseD", props);
          _UVDistortDTiling = FindProperty("_UVDistortionDTiling", props);
 
+         //Main Mask Distort
+         _UVDistortionMMap = FindProperty("_UVDistortionMMap", props);
+         _DistortionMIntensity = FindProperty("_DistortionMIntensity", props);
+         _GenerateNoiseMStrength = FindProperty("_GenerateNoiseMStrength", props);
+         _UVDistortionMTiling = FindProperty("_UVDistortionMTiling", props);
+         _UVDistortionMPanning = FindProperty("_UVDistortionMPanning", props);
+         _useGenerateNoiseM = FindProperty("_useGenerateNoiseM", props);
+         _isUVDistortionM = FindProperty("_isUVDistortionM", props);
+
          //Dissolve
          _useDissolve = FindProperty("_useDissolve", props);
          _isLifetimeDissolve = FindProperty("_isLifetimeDissolve", props);
@@ -331,6 +352,7 @@ public class KumaEffectShaderGUI : ShaderGUI
          _TrailEdgeDissolveMap = FindProperty("_TrailEdgeDissolveMap", props);
          _TrailEdgeDissolveScroll = FindProperty("_TrailEdgeDissolveScroll", props);
          _TrailEdgeDissolveTilling = FindProperty("_TrailEdgeDissolveTilling", props);
+         _ToggleXY = FindProperty("_ToggleXY", props);
 
          //Alpha Fade
          _useAlphaFade = FindProperty("_useAlphaFade", props);
@@ -342,6 +364,8 @@ public class KumaEffectShaderGUI : ShaderGUI
          _AlphaFadeThreshold = FindProperty("_AlphaFadeThreshold", props);
          _StartAlphaFade = FindProperty("_StartAlphaFade", props);
          _AlphaFadeMap = FindProperty("_AlphaFadeMap", props);
+         _AlphaFadeTiling = FindProperty("_AlphaFadeTiling", props);
+         _AlphaFadePanning = FindProperty("_AlphaFadePanning", props);
 
          //Fresnel
          _useFresnel = FindProperty("_useFresnel", props);
@@ -569,10 +593,14 @@ public class KumaEffectShaderGUI : ShaderGUI
                         _MainOffset.vectorValue = _MainOffsetVec;
                     }
                 }
+                EditorGUILayout.Space();
                 materialEditor.ShaderProperty(_isCustomIntensity,Styles.customIntensity);
                 GUILayout.Label("(CustomData2.z)", EditorStyles.label);
+                EditorGUILayout.Space();
                 materialEditor.ShaderProperty(_isCustomDataOffset,Styles.customOffset);
                 GUILayout.Label("(CustomData2.xy)", EditorStyles.label);
+                EditorGUILayout.Space();
+                EditorGUILayout.Space();
                 materialEditor.ShaderProperty(_isMainPolar,Styles.mainPolar);
                 if(_isMainPolar.floatValue == 1.0){
                     Vector4 _mainCenterVec = EditorGUILayout.Vector2Field("Center", _MainPolarCenter.vectorValue);
@@ -796,6 +824,41 @@ public class KumaEffectShaderGUI : ShaderGUI
                     materialEditor.RangeProperty(_DistortionDIntensity, "Distort Intensity");
                 }
 
+                EditorGUILayout.Space();
+                EditorGUILayout.Space();
+
+                //Main Mask Distort
+                GUILayout.Label("Main Mask Distort", EditorStyles.boldLabel);
+                materialEditor.ShaderProperty(_isUVDistortionM,Styles.distortD);
+                if(_isUVDistortionM.floatValue == 1.0){
+                    materialEditor.ShaderProperty(_useGenerateNoiseM,Styles.useGenNoise1);
+                    if(_useGenerateNoiseM.floatValue == 1.0){
+                        EditorGUI.BeginChangeCheck();
+
+                        Vector4 _DistortTileVec2 = EditorGUILayout.Vector2Field("Main Mask Distort Tiling", _UVDistortionMTiling.vectorValue);
+                        Vector4 _DistortVec2 = EditorGUILayout.Vector2Field("Main Mask Distort Panning", _UVDistortionMPanning.vectorValue);
+                
+                        if(EditorGUI.EndChangeCheck()){
+                            _UVDistortionMTiling.vectorValue = _DistortTileVec2;
+                            _UVDistortionMPanning.vectorValue = _DistortVec2;
+                        }
+                        materialEditor.FloatProperty(_GenerateNoiseMStrength, "Noise Strength");
+                    }else {
+                        EditorGUI.BeginChangeCheck();
+
+                        Vector4 _DistortTileVec2 = EditorGUILayout.Vector2Field("Main Mask Distort Tiling", _UVDistortionMTiling.vectorValue);
+                        Vector4 _DistortVec2 = EditorGUILayout.Vector2Field("Main Mask Distort Panning", _UVDistortionMPanning.vectorValue);
+                
+                        if(EditorGUI.EndChangeCheck()){
+                            _UVDistortionMTiling.vectorValue = _DistortTileVec2;
+                            _UVDistortionMPanning.vectorValue = _DistortVec2;
+                        }
+
+                        materialEditor.TexturePropertySingleLine(new GUIContent("Main Mask Distortion Map"), _UVDistortionMMap);
+                    }
+                    materialEditor.RangeProperty(_DistortionMIntensity, "Distort Intensity");
+                }
+
             }
         }
         //**************************************************
@@ -848,7 +911,7 @@ public class KumaEffectShaderGUI : ShaderGUI
                 EditorGUILayout.Space();
 
                 //Alpha Fade
-                GUILayout.Label("Alpha Fade（Dissolveとの併用非推奨）", EditorStyles.boldLabel);
+                GUILayout.Label("Alpha Fade", EditorStyles.boldLabel);
                 materialEditor.ShaderProperty(_useAlphaFade,Styles.AlphaFade);
                 if(_useAlphaFade.floatValue == 1.0){
 
@@ -861,11 +924,11 @@ public class KumaEffectShaderGUI : ShaderGUI
                         materialEditor.RangeProperty(_AFNoisePower, "Power");
                     }
                     EditorGUI.BeginChangeCheck();
-                    Vector4 _TilingVec2 = EditorGUILayout.Vector2Field("Tiling", _DissolveTiling.vectorValue);
-                    Vector4 _PanningVec2 = EditorGUILayout.Vector2Field("Panning", _DissolvePanning.vectorValue);
+                    Vector4 _TilingVec2 = EditorGUILayout.Vector2Field("Tiling", _AlphaFadeTiling.vectorValue);
+                    Vector4 _PanningVec2 = EditorGUILayout.Vector2Field("Panning", _AlphaFadePanning.vectorValue);
                     if(EditorGUI.EndChangeCheck()){
-                        _DissolveTiling.vectorValue = _TilingVec2;
-                        _DissolvePanning.vectorValue = _PanningVec2;
+                        _AlphaFadeTiling.vectorValue = _TilingVec2;
+                        _AlphaFadePanning.vectorValue = _PanningVec2;
                     }
 
                     materialEditor.ShaderProperty(_isCustomDataAlphaFade,Styles.customDissolve);
@@ -896,6 +959,7 @@ public class KumaEffectShaderGUI : ShaderGUI
                     materialEditor.RangeProperty(_TrailEdgeDissolveLength,"Length");
                     materialEditor.RangeProperty(_TrailEdgeDissolveThreshold,"Threshold");
                     materialEditor.ShaderProperty(_isBothDissolve,Styles.bothDissolve);
+                    materialEditor.ShaderProperty(_ToggleXY, Styles.toggleXY);
 
                     if(EditorGUI.EndChangeCheck()){
                         _TrailEdgeDissolveTilling.vectorValue = _TrailTilingVec2;
@@ -1216,6 +1280,7 @@ public class KumaEffectShaderGUI : ShaderGUI
         public static readonly GUIContent dissolve = new GUIContent("Enable Lifetime Dissolve");
         public static readonly GUIContent trailEdgeDissolve = new GUIContent("Use Trail Edge Dissolve");
         public static readonly GUIContent bothDissolve = new GUIContent("is Both Side Dissolve");
+        public static readonly GUIContent toggleXY = new GUIContent("Toggle XY");
 
         public static readonly GUIContent subtract = new GUIContent("is Noise Subtract");
         public static readonly GUIContent blink = new GUIContent("is Blinking Emission");
