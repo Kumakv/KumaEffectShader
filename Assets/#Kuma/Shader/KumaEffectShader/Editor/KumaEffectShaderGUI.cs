@@ -33,10 +33,6 @@ public class KumaEffectShaderGUI : ShaderGUI
     protected MaterialProperty _MainPolarCenter;
     protected MaterialProperty _isMainPolar;
 
-    protected MaterialProperty _GradientMap;
-    protected MaterialProperty _GradientColor;
-    protected MaterialProperty _TestFloat;
-
     //Noise1
     protected MaterialProperty _Noise1;
     protected MaterialProperty _Noise1Power;
@@ -201,6 +197,11 @@ public class KumaEffectShaderGUI : ShaderGUI
     protected MaterialProperty _VerticalLength;
     protected MaterialProperty _VerticalBorder;
 
+    //VRCLV
+    protected MaterialProperty _LightVolumes;
+    protected MaterialProperty _AdditiveOnly;
+    protected MaterialProperty _LVColorMultiplier;
+
 
 
     protected MaterialProperty _EmissionIntensity;
@@ -268,10 +269,6 @@ public class KumaEffectShaderGUI : ShaderGUI
 
          _MainPolarCenter = FindProperty("_MainPolarCenter", props);
          _isMainPolar = FindProperty("_isMainPolar", props);
-
-         _GradientMap = FindProperty("_GradientMap", props);
-         _GradientColor = FindProperty("_GradientColor", props);
-         _TestFloat = FindProperty("_TestFloat", props);
 
          _useNoise1 = FindProperty("_useNoise1", props);
          _Noise1 = FindProperty("_Noise1", props);
@@ -431,6 +428,11 @@ public class KumaEffectShaderGUI : ShaderGUI
          _RandomMulY = FindProperty("_RandomMulY", props);
 
          _EmissionIntensity = FindProperty("_EmissionIntensity", props);
+
+         //VRCLV
+         _LightVolumes = FindProperty("_LightVolumes", props);
+         _AdditiveOnly = FindProperty("_AdditiveOnly", props);
+         _LVColorMultiplier = FindProperty("_LVColorMultiplier", props);
 
 
          _isFirst = FindProperty("_isFirst", props);
@@ -1184,6 +1186,17 @@ public class KumaEffectShaderGUI : ShaderGUI
 
             using (new EditorGUILayout.VerticalScope("HelpBox")){
                 //for Animation
+                GUILayout.Label("VRCLV", EditorStyles.boldLabel);
+                materialEditor.ShaderProperty(_LightVolumes,Styles.lightVolumes);
+                //materialEditor.ShaderProperty(_AdditiveOnly,Styles.additiveOnly);
+                materialEditor.RangeProperty(_LVColorMultiplier, "Color Multiplier");
+            }
+
+            EditorGUILayout.Space();
+            EditorGUILayout.Space();
+
+            using (new EditorGUILayout.VerticalScope("HelpBox")){
+                //for Animation
                 GUILayout.Label("for Animation", EditorStyles.boldLabel);
                 materialEditor.RangeProperty(_EmissionIntensity, "Emission Intensity");
             }
@@ -1286,6 +1299,9 @@ public class KumaEffectShaderGUI : ShaderGUI
         public static readonly GUIContent blink = new GUIContent("is Blinking Emission");
 
         public static readonly GUIContent instancing = new GUIContent("Enable GPU Instancing");
+
+        public static readonly GUIContent lightVolumes = new GUIContent("Enable Light Volumes");
+        public static readonly GUIContent additiveOnly = new GUIContent("Additive Only");
 
         public static GUIContent streamApplyToAllSystemsText = EditorGUIUtility.TrTextContent("Apply to Systems", "Apply the vertex stream layout to all Particle Systems using this material");
     }
