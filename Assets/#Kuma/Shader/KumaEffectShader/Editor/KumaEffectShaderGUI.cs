@@ -166,6 +166,13 @@ public class KumaEffectShaderGUI : ShaderGUI
     protected MaterialProperty _VoronoiPanning;
     protected MaterialProperty _VoronoiIntensity;
 
+    //Cyclic Noise
+    protected MaterialProperty _useCyclicNoise;
+    protected MaterialProperty _CyclicPower;
+    protected MaterialProperty _isDerivative;
+    protected MaterialProperty _CyclicScale;
+    protected MaterialProperty _CyclicPanning;
+
     //Vertex Offset
     protected MaterialProperty _useVertexOffset;
     protected MaterialProperty _VertexNoiseTex;
@@ -230,6 +237,7 @@ public class KumaEffectShaderGUI : ShaderGUI
     public static bool _dissolveFoldout = true;
     public static bool _fresnelFoldout = true;
     public static bool _ChromaticCausticsFoldout = true;
+    public static bool _CyclicNoiseFoldout = true;
     public static bool _GradientColorFoldout = true;
     public static bool _shaderShapeFoldout = true;
     public static bool _vertexOffsetFoldout = true;
@@ -244,6 +252,9 @@ public class KumaEffectShaderGUI : ShaderGUI
     const string BlendingPropertyName = "_Blending";
     const string SrcBlendPropertyName = "_SrcBlend";
     const string DstBlendPropertyName = "_DstBlend";
+
+    private string[] modeNames = {"Voronoi","Simplex","Gradient","Simple","None"};
+    private string[] keywords = {"_ISGENERATIVENOISE_VORONOI", "_ISGENERATIVENOISE_SIMPLEX", "_ISGENERATIVENOISE_GRADIENT", "_ISGENERATIVENOISE_SIMPLE", "_ISGENERATIVENOISE_NONE"};
 
 
     private List<Vector4> customValue = new List<Vector4>();
@@ -383,6 +394,12 @@ public class KumaEffectShaderGUI : ShaderGUI
          _VoronoiPanning = FindProperty("_VoronoiPanning", props);
          _VoronoiIntensity = FindProperty("_VoronoiIntensity", props);
 
+         //Cyclic Noise
+         _useCyclicNoise = FindProperty("_useCyclicNoise", props);
+         _CyclicPower = FindProperty("_CyclicPower", props);
+         _isDerivative = FindProperty("_isDerivative", props);
+         _CyclicScale = FindProperty("_CyclicScale", props);
+         _CyclicPanning = FindProperty("_CyclicPanning", props);
 
          //Shader Shapes
          _useDust = FindProperty("_useDust", props);
@@ -509,8 +526,9 @@ public class KumaEffectShaderGUI : ShaderGUI
         streams.Add(ParticleSystemVertexStream.UV);
         streams.Add(ParticleSystemVertexStream.StableRandomXY);
         streams.Add(ParticleSystemVertexStream.Custom1XYZW);
-        streams.Add(ParticleSystemVertexStream.AgePercent);
         streams.Add(ParticleSystemVertexStream.Custom2XYZW);
+        streams.Add(ParticleSystemVertexStream.Center);
+        streams.Add(ParticleSystemVertexStream.AgePercent);
             
         string warnings = "";
 		List<ParticleSystemVertexStream> rendererStreams = new List<ParticleSystemVertexStream>();
@@ -1030,6 +1048,36 @@ public class KumaEffectShaderGUI : ShaderGUI
         }
 
         //**************************************************
+        //****** Cyclic Noise ******************************
+        //**************************************************
+        EditorGUILayout.Space();
+        EditorGUILayout.Space();
+        SetFoldout(ref _CyclicNoiseFoldout, "Cyclic Noise");
+        if(_CyclicNoiseFoldout){
+            using (new EditorGUILayout.VerticalScope("HelpBox")){
+                EditorGUI.BeginChangeCheck();
+                GUILayout.Label("Cyclic Noise", EditorStyles.boldLabel);
+                //Soft Particle
+                materialEditor.ShaderProperty(_useCyclicNoise,Styles.cyclicNoise);
+                if(_useCyclicNoise.floatValue == 1.0){
+                    bool toggleValue = _isDerivative.floatValue == 1;
+                    toggleValue = EditorGUILayout.Toggle("is Derivative", toggleValue);
+                    _isDerivative.floatValue = toggleValue ? 1 : 0;
+                    materialEditor.RangeProperty(_CyclicPower, "Power");
+                    materialEditor.ShaderProperty(_CyclicScale, "Scale");
+                    Vector4 _NoisePanningVec3 = EditorGUILayout.Vector3Field("Noise Panning", _CyclicPanning.vectorValue);
+
+                    if(EditorGUI.EndChangeCheck()){
+                        _CyclicPanning.vectorValue = _NoisePanningVec3;
+                    }
+                    EditorGUILayout.Space();
+
+                }
+                EditorGUILayout.Space();
+            }
+        }
+
+        //**************************************************
         //****** Shader Shapes ***************************
         //**************************************************
         EditorGUILayout.Space();
@@ -1276,6 +1324,7 @@ public class KumaEffectShaderGUI : ShaderGUI
         public static readonly GUIContent inverse = new GUIContent("Inverse");
 
         public static readonly GUIContent CACaustics = new GUIContent("Use Chromatic Caustics");
+        public static readonly GUIContent cyclicNoise = new GUIContent("Use Cyclic Noise");
 
         public static readonly GUIContent GradientColor = new GUIContent("Use Gradient Color");
 

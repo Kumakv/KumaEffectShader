@@ -9,7 +9,7 @@ public class KumaEffectVertexStreamEditor : EditorWindow
     private bool enableCustomVertexStream = false;
 
     List<ParticleSystemVertexStream> streams = new List<ParticleSystemVertexStream>();
-    [MenuItem("Tools/Kuma/KumaEffect Vertex Stream Editor")]
+    [MenuItem("#Kuma/KumaEffect Vertex Stream Editor")]
     public static void ShowWindow()
     {
         GetWindow<KumaEffectVertexStreamEditor>("Particle System Vertex Stream Editor");
@@ -45,9 +45,9 @@ public class KumaEffectVertexStreamEditor : EditorWindow
         streams.Add(ParticleSystemVertexStream.UV);
         streams.Add(ParticleSystemVertexStream.StableRandomXY);
         streams.Add(ParticleSystemVertexStream.Custom1XYZW);
-        streams.Add(ParticleSystemVertexStream.AgePercent);
         streams.Add(ParticleSystemVertexStream.Custom2XYZW);
         streams.Add(ParticleSystemVertexStream.Center);
+        streams.Add(ParticleSystemVertexStream.AgePercent);
         //-------------------------------------------------------------
 
         // 対象のオブジェクトに含まれるすべてのパーティクルシステムを取得
