@@ -34,6 +34,7 @@ public class KumaEffectShaderGUI : ShaderGUI
     protected MaterialProperty _isMainPolar;
 
     //Noise1
+    protected MaterialProperty _NoiseMode;
     protected MaterialProperty _Noise1;
     protected MaterialProperty _Noise1Power;
     protected MaterialProperty _Noise1XPanning;
@@ -55,7 +56,6 @@ public class KumaEffectShaderGUI : ShaderGUI
     protected MaterialProperty _isNoise2Polar;
     protected MaterialProperty _Noise2ShearX;
     protected MaterialProperty _Noise2ShearY;
-    protected MaterialProperty _isSubtract;
     protected MaterialProperty _useNoise2;
 
     //Distort 1
@@ -209,6 +209,11 @@ public class KumaEffectShaderGUI : ShaderGUI
     protected MaterialProperty _AdditiveOnly;
     protected MaterialProperty _LVColorMultiplier;
 
+    //Cubemap
+    protected MaterialProperty _useCubeMap;
+    protected MaterialProperty _CubeMap;
+    protected MaterialProperty _CubeMapIntensity;
+
 
 
     protected MaterialProperty _EmissionIntensity;
@@ -280,7 +285,9 @@ public class KumaEffectShaderGUI : ShaderGUI
 
          _MainPolarCenter = FindProperty("_MainPolarCenter", props);
          _isMainPolar = FindProperty("_isMainPolar", props);
-
+        
+         //Noise1
+         _NoiseMode = FindProperty("_NoiseMode", props);
          _useNoise1 = FindProperty("_useNoise1", props);
          _Noise1 = FindProperty("_Noise1", props);
          _Noise1Power = FindProperty("_Noise1Power", props);
@@ -298,8 +305,6 @@ public class KumaEffectShaderGUI : ShaderGUI
          _isNoise2Polar = FindProperty("_isNoise2Polar", props);
          _Noise2ShearX = FindProperty("_Noise2ShearX", props);
          _Noise2ShearY = FindProperty("_Noise2ShearY", props);
-         _isSubtract = FindProperty("_isSubtract", props);
-         
         
          //UV Distort 1
          _isUVDistortion = FindProperty("_isUVDistortion1", props);
@@ -451,11 +456,15 @@ public class KumaEffectShaderGUI : ShaderGUI
          _AdditiveOnly = FindProperty("_AdditiveOnly", props);
          _LVColorMultiplier = FindProperty("_LVColorMultiplier", props);
 
+         //Cubemap
+         _useCubeMap = FindProperty("_useCubeMap", props);
+         _CubeMap = FindProperty("_CubeMap", props);
+         _CubeMapIntensity = FindProperty("_CubeMapIntensity", props);
+
 
          _isFirst = FindProperty("_isFirst", props);
 
          _Cull = FindProperty("_Cull", props);
-         //_Blending = FindProperty("_Blending", props);
          _SrcBlend = FindProperty("_SrcBlend", props);
          _DstBlend = FindProperty("_DstBlend", props);
          _ZWrite = FindProperty("_ZWrite", props);
@@ -464,7 +473,10 @@ public class KumaEffectShaderGUI : ShaderGUI
          _Pass = FindProperty("_Pass", props);
          _Ref = FindProperty("_Ref", props);
 
-        #region SetGUIStyle
+
+        //**************************************************
+        //****** Set GUI Style *****************************
+        //**************************************************
         if (foldoutStyle == null)
             foldoutStyle = new GUIStyle(EditorStyles.foldout)
             {
@@ -502,7 +514,12 @@ public class KumaEffectShaderGUI : ShaderGUI
             texture.Apply();
             return texture;
         }
-        #endregion
+
+        void SetKeyword(Material mat, string keyword, bool enabled)
+        {
+            if (enabled)mat.EnableKeyword(keyword);
+            else mat.DisableKeyword(keyword);
+        }
         
         Material mat = (Material)materialEditor.target;
         if (m_FirstTimeApply){
@@ -519,6 +536,9 @@ public class KumaEffectShaderGUI : ShaderGUI
             _DstBlend.floatValue = 1.0f;
         }
 
+        //**************************************************
+        //****** Setup Vertex Streams **********************
+        //**************************************************
         List<ParticleSystemVertexStream> streams = new List<ParticleSystemVertexStream>();
         streams.Add(ParticleSystemVertexStream.Position);
         streams.Add(ParticleSystemVertexStream.Normal);
@@ -529,7 +549,7 @@ public class KumaEffectShaderGUI : ShaderGUI
         streams.Add(ParticleSystemVertexStream.Custom2XYZW);
         streams.Add(ParticleSystemVertexStream.Center);
         streams.Add(ParticleSystemVertexStream.AgePercent);
-            
+
         string warnings = "";
 		List<ParticleSystemVertexStream> rendererStreams = new List<ParticleSystemVertexStream>();
 		foreach (ParticleSystemRenderer renderer in m_RenderersUsingThisMaterial)
@@ -579,10 +599,6 @@ public class KumaEffectShaderGUI : ShaderGUI
                                 customData.SetVector(ParticleSystemCustomData.Custom2, 2, customValue[i].z);
                                 }
                             }
-                            
-                            
-                            
-                            
                         }
 					}
 				}
@@ -592,8 +608,63 @@ public class KumaEffectShaderGUI : ShaderGUI
 			EditorGUILayout.Space();
 		}
 
+        //**************************************************
+        //****** Setup Particle ****************************
+        //**************************************************
+        if (GUILayout.Button("Setup Particle", EditorStyles.miniButtonLeft, GUILayout.Width(90)))
+        {
+            GameObject selectedObject = Selection.activeGameObject;
+            if(selectedObject != null){
+                ParticleSystemRenderer psRenderer = selectedObject.GetComponent<ParticleSystemRenderer>();
+
+                // 確認ダイアログを表示
+                bool confirmed = EditorUtility.DisplayDialog(
+                    "確認",
+                    "本当に実行しますか？\n既に設定されている値を上書きする場合があります。\nこの操作は元に戻せません。",
+                    "はい",
+                    "キャンセル"
+                );
+                if (confirmed)
+                {
+                    
+                    var particle = psRenderer.GetComponent<ParticleSystem>();
+                    //モジュールの取得
+                    var main = particle.main;
+                    var shape = particle.shape;
+                    var sizeOverLifetime = particle.sizeOverLifetime;
+                    //Mainの初期設定
+                    main.duration = 100.0f;
+                    main.startSize = new ParticleSystem.MinMaxCurve(0.04f, 0.08f);
+                    main.startLifetime = new ParticleSystem.MinMaxCurve(2.0f, 6.0f);
+                    main.startSpeed = new ParticleSystem.MinMaxCurve(0.2f, 1.0f);
+                    //Shapeの初期設定
+                    shape.angle = 0.0f;
+                    //SizeOverLifetimeの初期設定
+                    //SizeOverLifetimeを有効
+                    sizeOverLifetime.enabled = true;
+                    AnimationCurve curve = new AnimationCurve( new Keyframe(0.0f, 0.0f), new Keyframe(0.3f, 1.0f),  new Keyframe(1.0f, 0.0f));
+                    for(int i = 0; i < curve.length; i++){
+                        Keyframe key = curve[i];
+                        key.inTangent = 0.0f;
+                        key.outTangent = 0.0f;
+                        curve.MoveKey(i, key);
+                    }
+                    sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1.0f, curve);
+                    //Allow Rollオフ
+                    psRenderer.allowRoll = false;
+                    Debug.Log("Setup完了");
+                } 
+            }else {
+                // 失敗ダイアログを表示
+                bool confirmed = EditorUtility.DisplayDialog(
+                    "エラー",
+                    "ParticleSystemからボタンを押してください。",
+                    "閉じる"
+                );
+            }
+        }
         EditorGUILayout.Space();
-        
+        EditorGUILayout.Space();
 
         //**************************************************
         //****** Main Tex **********************************
@@ -604,7 +675,7 @@ public class KumaEffectShaderGUI : ShaderGUI
                 //Maintex
                 GUILayout.Label("Main Texture", EditorStyles.boldLabel);
                 materialEditor.TexturePropertySingleLine(new GUIContent("Main Texture"), _MainTex, _MainColor);
-                                if(_isCustomDataOffset.floatValue == 0.0){
+                if(_isCustomDataOffset.floatValue == 0.0){
                     EditorGUI.BeginChangeCheck();
 
                     Vector4 _MainOffsetVec = EditorGUILayout.Vector2Field("Offset", _MainOffset.vectorValue);
@@ -613,14 +684,20 @@ public class KumaEffectShaderGUI : ShaderGUI
                         _MainOffset.vectorValue = _MainOffsetVec;
                     }
                 }
+
                 EditorGUILayout.Space();
+
                 materialEditor.ShaderProperty(_isCustomIntensity,Styles.customIntensity);
                 GUILayout.Label("(CustomData2.z)", EditorStyles.label);
+
                 EditorGUILayout.Space();
+
                 materialEditor.ShaderProperty(_isCustomDataOffset,Styles.customOffset);
                 GUILayout.Label("(CustomData2.xy)", EditorStyles.label);
+
                 EditorGUILayout.Space();
                 EditorGUILayout.Space();
+
                 materialEditor.ShaderProperty(_isMainPolar,Styles.mainPolar);
                 if(_isMainPolar.floatValue == 1.0){
                     Vector4 _mainCenterVec = EditorGUILayout.Vector2Field("Center", _MainPolarCenter.vectorValue);
@@ -629,20 +706,18 @@ public class KumaEffectShaderGUI : ShaderGUI
                     }
                 }
 
-
-
-
                 EditorGUILayout.Space();
                 EditorGUILayout.Space();
+
                 GUILayout.Label("Second Color", EditorStyles.boldLabel);
                 materialEditor.ShaderProperty(_SecondColor, "Second Color");
                 materialEditor.RangeProperty(_SecondColorThreshold, "Threshold");
                 materialEditor.RangeProperty(_Hue, "Hue");
                 materialEditor.RangeProperty(_Saturation, "Saturation");
                 
+                EditorGUILayout.Space();
+                EditorGUILayout.Space();
 
-                EditorGUILayout.Space();
-                EditorGUILayout.Space();
                 GUILayout.Label("Second Mask", EditorStyles.boldLabel);
                 materialEditor.ShaderProperty(_useSecondMask,Styles.secondMask);
                 if(_useSecondMask.floatValue == 1.0){
@@ -652,86 +727,114 @@ public class KumaEffectShaderGUI : ShaderGUI
                         _SecondOffset.vectorValue = _SecondOffsetVec;
                     }
                 }
+
                 EditorGUILayout.Space();
                 EditorGUILayout.Space();
+
                 GUILayout.Label("MatCap", EditorStyles.boldLabel);
                 materialEditor.ShaderProperty(_useMatCap,Styles.MatCap);
                 if(_useMatCap.floatValue == 1.0){
                     materialEditor.TexturePropertySingleLine(new GUIContent("MatCap"), _MatCapTex);
                     materialEditor.RangeProperty(_matcapIntensity, "Intensity");
-                }                
+                }    
+
+                EditorGUILayout.Space();
+                EditorGUILayout.Space();
+
+                GUILayout.Label("CubeMap", EditorStyles.boldLabel);
+                materialEditor.ShaderProperty(_useCubeMap,Styles.cubeMap);
+                if(_useCubeMap.floatValue == 1.0){
+                    materialEditor.TexturePropertySingleLine(new GUIContent("CubeMap"), _CubeMap);
+                    materialEditor.RangeProperty(_CubeMapIntensity, "Intensity");
+                }    
+                           
             }
         }
         //**************************************************
-        //****** Noise 1 ***********************************
+        //****** Noise ***********************************
         //**************************************************
         EditorGUILayout.Space();
         EditorGUILayout.Space();
 
-        SetFoldout(ref _noise1Foldout, "Noise 1");
+        SetFoldout(ref _noise1Foldout, "Noise");
         if(_noise1Foldout)
         {
-            //EditorGUILayout.LabelField("Noise 1");
             using (new EditorGUILayout.VerticalScope("HelpBox")){
+                EditorGUILayout.Space();
+
+                using (new EditorGUILayout.VerticalScope("HelpBox")){
+                    EditorGUI.BeginChangeCheck();
+
+                    int selected = EditorGUILayout.Popup("Mode", (int)_NoiseMode.floatValue, new[] { "Multiply", "Add", "Subtract" });
+
+                    _NoiseMode.floatValue = selected;
+                    if(EditorGUI.EndChangeCheck()){
+                        foreach (Material material in materialEditor.targets)
+                        {
+                            SetKeyword(material, "_NOISEMODE_MULTIPLY", selected == 0);
+                            SetKeyword(material, "_NOISEMODE_ADD", selected == 1);
+                            SetKeyword(material, "_NOISEMODE_SUBTRACT", selected == 2);
+                        }
+                    }
+                }
+
+                EditorGUILayout.Space();
+
                 //Noise1
-                GUILayout.Label("Noise 1", EditorStyles.boldLabel);
-                materialEditor.ShaderProperty(_useNoise1,Styles.Noise1);
-                if(_useNoise1.floatValue == 1.0){
-                    materialEditor.TexturePropertySingleLine(new GUIContent("Noise Tex 1"), _Noise1);
+                using (new EditorGUILayout.VerticalScope("HelpBox")){
+                    GUILayout.Label("Noise 1", EditorStyles.boldLabel);
+                    materialEditor.ShaderProperty(_useNoise1,Styles.Noise1);
+                    if(_useNoise1.floatValue == 1.0){
+                        EditorGUI.BeginChangeCheck();
 
-                    EditorGUI.BeginChangeCheck();
+                        materialEditor.TexturePropertySingleLine(new GUIContent("Noise Tex 1"), _Noise1);
 
-                    Vector4 _NoiseVec2Tiling = EditorGUILayout.Vector2Field("Noise 1 Tiling", _Noise1Tiling.vectorValue);
-                    Vector4 _NoiseVec2 = EditorGUILayout.Vector2Field("Noise 1 Panning", _Noise1Panning.vectorValue);
-                
-                    if(EditorGUI.EndChangeCheck()){
-                        _Noise1Tiling.vectorValue = _NoiseVec2Tiling;
-                        _Noise1Panning.vectorValue = _NoiseVec2;
-                    }
-                    materialEditor.RangeProperty(_Noise1Power, "Noise Power");
-                    materialEditor.ShaderProperty(_isNoise1Polar,Styles.polarUV);
-                    if(_isNoise1Polar.floatValue == 1.0){
-                        materialEditor.RangeProperty(_Noise1ShearX, "Shear X");
-                        materialEditor.RangeProperty(_Noise1ShearY, "Shear Y");
+                        Vector4 _NoiseVec2Tiling = EditorGUILayout.Vector2Field("Noise 1 Tiling", _Noise1Tiling.vectorValue);
+                        Vector4 _NoiseVec2 = EditorGUILayout.Vector2Field("Noise 1 Panning", _Noise1Panning.vectorValue);
+                    
+                        if(EditorGUI.EndChangeCheck()){
+                            _Noise1Tiling.vectorValue = _NoiseVec2Tiling;
+                            _Noise1Panning.vectorValue = _NoiseVec2;
+                        }
+                        materialEditor.RangeProperty(_Noise1Power, "Noise Power");
+                        materialEditor.ShaderProperty(_isNoise1Polar,Styles.polarUV);
+                        if(_isNoise1Polar.floatValue == 1.0){
+                            materialEditor.RangeProperty(_Noise1ShearX, "Shear X");
+                            materialEditor.RangeProperty(_Noise1ShearY, "Shear Y");
+                        }
                     }
                 }
-            }
-        }
-        //**************************************************
-        //****** Noise 2 ***********************************
-        //**************************************************
-        EditorGUILayout.Space();
-        EditorGUILayout.Space();
-        SetFoldout(ref _noise2Foldout, "Noise 2");
-        if(_noise2Foldout){
 
-            //EditorGUILayout.LabelField("Noise 2");
-            using (new EditorGUILayout.VerticalScope("HelpBox")){
+                EditorGUILayout.Space();
+                
                 //Noise2
-                GUILayout.Label("Noise 2", EditorStyles.boldLabel);
-                materialEditor.ShaderProperty(_useNoise2,Styles.Noise2);
-                if(_useNoise2.floatValue == 1.0){
-                    materialEditor.TexturePropertySingleLine(new GUIContent("Noise Tex 2"), _Noise2);
+                using (new EditorGUILayout.VerticalScope("HelpBox")){
+                    GUILayout.Label("Noise 2", EditorStyles.boldLabel);
+                    materialEditor.ShaderProperty(_useNoise2,Styles.Noise2);
+                    if(_useNoise2.floatValue == 1.0){
+                        materialEditor.TexturePropertySingleLine(new GUIContent("Noise Tex 2"), _Noise2);
 
-                    EditorGUI.BeginChangeCheck();
+                        EditorGUI.BeginChangeCheck();
 
-                    Vector4 _NoiseVec2Tiling = EditorGUILayout.Vector2Field("Noise 2 Tiling", _Noise2Tiling.vectorValue);
-                    Vector4 _NoiseVec2 = EditorGUILayout.Vector2Field("Noise 2 Panning", _Noise2Panning.vectorValue);
-                
-                    if(EditorGUI.EndChangeCheck()){
-                        _Noise2Tiling.vectorValue = _NoiseVec2Tiling;
-                        _Noise2Panning.vectorValue = _NoiseVec2;
+                        Vector4 _NoiseVec2Tiling = EditorGUILayout.Vector2Field("Noise 2 Tiling", _Noise2Tiling.vectorValue);
+                        Vector4 _NoiseVec2 = EditorGUILayout.Vector2Field("Noise 2 Panning", _Noise2Panning.vectorValue);
+                    
+                        if(EditorGUI.EndChangeCheck()){
+                            _Noise2Tiling.vectorValue = _NoiseVec2Tiling;
+                            _Noise2Panning.vectorValue = _NoiseVec2;
+                        }
+                        materialEditor.RangeProperty(_Noise2Power, "Noise Power");
+                        materialEditor.ShaderProperty(_isNoise2Polar,Styles.polarUV);
+                        if(_isNoise2Polar.floatValue == 1.0){
+                            materialEditor.RangeProperty(_Noise2ShearX, "Shear X");
+                            materialEditor.RangeProperty(_Noise2ShearY, "Shear Y");
+                        }
                     }
-                    materialEditor.RangeProperty(_Noise2Power, "Noise Power");
-                    materialEditor.ShaderProperty(_isNoise2Polar,Styles.polarUV);
-                    if(_isNoise2Polar.floatValue == 1.0){
-                        materialEditor.RangeProperty(_Noise2ShearX, "Shear X");
-                        materialEditor.RangeProperty(_Noise2ShearY, "Shear Y");
-                    }
-                    materialEditor.ShaderProperty(_isSubtract,Styles.subtract);
                 }
+                EditorGUILayout.Space();
             }
         }
+
         //**************************************************
         //****** UV Distortion *****************************
         //**************************************************
@@ -739,8 +842,6 @@ public class KumaEffectShaderGUI : ShaderGUI
         EditorGUILayout.Space();
         SetFoldout(ref _distortFoldout, "UV Distortion");
         if(_distortFoldout){
-
-            //EditorGUILayout.LabelField("UV Distortion");
             using (new EditorGUILayout.VerticalScope("HelpBox")){
                 //UV Distortion
                 GUILayout.Label("UV Distort 1", EditorStyles.boldLabel);
@@ -752,7 +853,7 @@ public class KumaEffectShaderGUI : ShaderGUI
 
                         Vector4 _DistortTileVec2 = EditorGUILayout.Vector2Field("UV Distort 1 Tiling", _UVDistortTiling.vectorValue);
                         Vector4 _DistortVec2 = EditorGUILayout.Vector2Field("UV Distort 1 Panning", _UVDistortPanning.vectorValue);
-                
+
                         if(EditorGUI.EndChangeCheck()){
                             _UVDistortTiling.vectorValue =  _DistortTileVec2;
                             _UVDistortPanning.vectorValue = _DistortVec2;
@@ -763,7 +864,7 @@ public class KumaEffectShaderGUI : ShaderGUI
 
                         Vector4 _DistortTileVec2 = EditorGUILayout.Vector2Field("UV Distort 1 Tiling", _UVDistortTiling.vectorValue);
                         Vector4 _DistortVec2 = EditorGUILayout.Vector2Field("UV Distort 1 Panning", _UVDistortPanning.vectorValue);
-                
+
                         if(EditorGUI.EndChangeCheck()){
                             _UVDistortTiling.vectorValue =  _DistortTileVec2;
                             _UVDistortPanning.vectorValue = _DistortVec2;
@@ -787,7 +888,7 @@ public class KumaEffectShaderGUI : ShaderGUI
 
                         Vector4 _DistortTileVec2 = EditorGUILayout.Vector2Field("UV Distort 2 Tiling", _UVDistort2Tiling.vectorValue);
                         Vector4 _DistortVec2 = EditorGUILayout.Vector2Field("UV Distort 2 Panning", _UVDistortion2Panning.vectorValue);
-                
+
                         if(EditorGUI.EndChangeCheck()){
                             _UVDistort2Tiling.vectorValue =  _DistortTileVec2;
                             _UVDistortion2Panning.vectorValue = _DistortVec2;
@@ -798,7 +899,7 @@ public class KumaEffectShaderGUI : ShaderGUI
 
                         Vector4 _DistortTileVec2 = EditorGUILayout.Vector2Field("UV Distort 2 Tiling", _UVDistort2Tiling.vectorValue);
                         Vector4 _DistortVec2 = EditorGUILayout.Vector2Field("UV Distort 2 Panning", _UVDistortion2Panning.vectorValue);
-                
+
                         if(EditorGUI.EndChangeCheck()){
                             _UVDistort2Tiling.vectorValue =  _DistortTileVec2;
                             _UVDistortion2Panning.vectorValue = _DistortVec2;
@@ -822,7 +923,7 @@ public class KumaEffectShaderGUI : ShaderGUI
 
                         Vector4 _DistortTileVec2 = EditorGUILayout.Vector2Field("Dissolve Distort Tiling", _UVDistortDTiling.vectorValue);
                         Vector4 _DistortVec2 = EditorGUILayout.Vector2Field("Dissolve Distort Panning", _UVDistortionDPanning.vectorValue);
-                
+
                         if(EditorGUI.EndChangeCheck()){
                             _UVDistortDTiling.vectorValue = _DistortTileVec2;
                             _UVDistortionDPanning.vectorValue = _DistortVec2;
@@ -833,7 +934,7 @@ public class KumaEffectShaderGUI : ShaderGUI
 
                         Vector4 _DistortTileVec2 = EditorGUILayout.Vector2Field("Dissolve Distort Tiling", _UVDistortDTiling.vectorValue);
                         Vector4 _DistortVec2 = EditorGUILayout.Vector2Field("Dissolve Distort Panning", _UVDistortionDPanning.vectorValue);
-                
+
                         if(EditorGUI.EndChangeCheck()){
                             _UVDistortDTiling.vectorValue = _DistortTileVec2;
                             _UVDistortionDPanning.vectorValue = _DistortVec2;
@@ -857,7 +958,7 @@ public class KumaEffectShaderGUI : ShaderGUI
 
                         Vector4 _DistortTileVec2 = EditorGUILayout.Vector2Field("Main Mask Distort Tiling", _UVDistortionMTiling.vectorValue);
                         Vector4 _DistortVec2 = EditorGUILayout.Vector2Field("Main Mask Distort Panning", _UVDistortionMPanning.vectorValue);
-                
+
                         if(EditorGUI.EndChangeCheck()){
                             _UVDistortionMTiling.vectorValue = _DistortTileVec2;
                             _UVDistortionMPanning.vectorValue = _DistortVec2;
@@ -868,7 +969,7 @@ public class KumaEffectShaderGUI : ShaderGUI
 
                         Vector4 _DistortTileVec2 = EditorGUILayout.Vector2Field("Main Mask Distort Tiling", _UVDistortionMTiling.vectorValue);
                         Vector4 _DistortVec2 = EditorGUILayout.Vector2Field("Main Mask Distort Panning", _UVDistortionMPanning.vectorValue);
-                
+
                         if(EditorGUI.EndChangeCheck()){
                             _UVDistortionMTiling.vectorValue = _DistortTileVec2;
                             _UVDistortionMPanning.vectorValue = _DistortVec2;
@@ -878,7 +979,6 @@ public class KumaEffectShaderGUI : ShaderGUI
                     }
                     materialEditor.RangeProperty(_DistortionMIntensity, "Distort Intensity");
                 }
-
             }
         }
         //**************************************************
@@ -888,8 +988,6 @@ public class KumaEffectShaderGUI : ShaderGUI
         EditorGUILayout.Space();
         SetFoldout(ref _dissolveFoldout, "Dissolve");
         if(_dissolveFoldout){
-
-            //EditorGUILayout.LabelField("Dissolve");
             using (new EditorGUILayout.VerticalScope("HelpBox")){
                 //Dissolve
                 GUILayout.Label("Dissolve", EditorStyles.boldLabel);
@@ -900,7 +998,6 @@ public class KumaEffectShaderGUI : ShaderGUI
                     EditorGUI.BeginChangeCheck();
                     Vector4 _TilingVec2 = EditorGUILayout.Vector2Field("Tiling", _DissolveTiling.vectorValue);
                     Vector4 _PanningVec2 = EditorGUILayout.Vector2Field("Panning", _DissolvePanning.vectorValue);
-                    
 
                     materialEditor.RangeProperty(_EdgeWidth, "Edge Width");
                     materialEditor.ShaderProperty(_EdgeColor, "Edge Color");
@@ -910,7 +1007,6 @@ public class KumaEffectShaderGUI : ShaderGUI
                         _DissolveTiling.vectorValue = _TilingVec2;
                         _DissolvePanning.vectorValue = _PanningVec2;
                     }
-                    
 
                     if(_isCustomDataDissolve.floatValue == 0.0){
                         materialEditor.ShaderProperty(_isLifetimeDissolve,Styles.dissolve);
@@ -934,7 +1030,6 @@ public class KumaEffectShaderGUI : ShaderGUI
                 GUILayout.Label("Alpha Fade", EditorStyles.boldLabel);
                 materialEditor.ShaderProperty(_useAlphaFade,Styles.AlphaFade);
                 if(_useAlphaFade.floatValue == 1.0){
-
                     materialEditor.ShaderProperty(_useGeneNoise4AF,Styles.useGenNoise1);
                     if(_useGeneNoise4AF.floatValue == 1.0){
                         materialEditor.FloatProperty(_AFNoiseStrength, "Strength");
@@ -943,7 +1038,9 @@ public class KumaEffectShaderGUI : ShaderGUI
                         materialEditor.TexturePropertySingleLine(new GUIContent("AlphaFade Map"), _AlphaFadeMap);
                         materialEditor.RangeProperty(_AFNoisePower, "Power");
                     }
+
                     EditorGUI.BeginChangeCheck();
+
                     Vector4 _TilingVec2 = EditorGUILayout.Vector2Field("Tiling", _AlphaFadeTiling.vectorValue);
                     Vector4 _PanningVec2 = EditorGUILayout.Vector2Field("Panning", _AlphaFadePanning.vectorValue);
                     if(EditorGUI.EndChangeCheck()){
@@ -962,7 +1059,6 @@ public class KumaEffectShaderGUI : ShaderGUI
                         }
                     }
                 }
-
 
                 EditorGUILayout.Space();
                 EditorGUILayout.Space();
@@ -986,14 +1082,15 @@ public class KumaEffectShaderGUI : ShaderGUI
                         _TrailEdgeDissolveScroll.vectorValue = _TrailPanningVec2;
                     }
                 }
-                
             }
         }
+
+        EditorGUILayout.Space();
+        EditorGUILayout.Space();
+
         //**************************************************
         //****** Fresnel ***********************************
-        //**************************************************
-        EditorGUILayout.Space();
-        EditorGUILayout.Space();
+        //**************************************************        
         SetFoldout(ref _fresnelFoldout, "Fresnel");
         if(_fresnelFoldout){
             using (new EditorGUILayout.VerticalScope("HelpBox")){
@@ -1004,21 +1101,20 @@ public class KumaEffectShaderGUI : ShaderGUI
                     materialEditor.FloatProperty(_FresnelWidth, "Width");
                     materialEditor.FloatProperty(_FresnelIntensity, "Intensity");
                     materialEditor.ShaderProperty(_isFresnelInverse,Styles.inverse);
-                    
                 }
             }
         }
 
+        EditorGUILayout.Space();
+        EditorGUILayout.Space();
+
         //**************************************************
         //****** Chromatic Caustics ************************
-        //**************************************************
-        EditorGUILayout.Space();
-        EditorGUILayout.Space();
+        //**************************************************        
         SetFoldout(ref _ChromaticCausticsFoldout, "Chromatic Caustics");
         if(_ChromaticCausticsFoldout){
             using (new EditorGUILayout.VerticalScope("HelpBox")){
                 GUILayout.Label("Chromatic Caustics (高負荷！！)", EditorStyles.boldLabel);
-                //Chromatic Caustics
                 materialEditor.ShaderProperty(_useCACaustics,Styles.CACaustics);
                 if(_useCACaustics.floatValue == 1.0){
 
@@ -1047,11 +1143,12 @@ public class KumaEffectShaderGUI : ShaderGUI
             }
         }
 
+        EditorGUILayout.Space();
+        EditorGUILayout.Space();
+
         //**************************************************
         //****** Cyclic Noise ******************************
         //**************************************************
-        EditorGUILayout.Space();
-        EditorGUILayout.Space();
         SetFoldout(ref _CyclicNoiseFoldout, "Cyclic Noise");
         if(_CyclicNoiseFoldout){
             using (new EditorGUILayout.VerticalScope("HelpBox")){
@@ -1071,17 +1168,17 @@ public class KumaEffectShaderGUI : ShaderGUI
                         _CyclicPanning.vectorValue = _NoisePanningVec3;
                     }
                     EditorGUILayout.Space();
-
                 }
                 EditorGUILayout.Space();
             }
         }
 
+        EditorGUILayout.Space();
+        EditorGUILayout.Space();
+
         //**************************************************
         //****** Shader Shapes ***************************
         //**************************************************
-        EditorGUILayout.Space();
-        EditorGUILayout.Space();
         SetFoldout(ref _shaderShapeFoldout, "Shader Shapes");
         if(_shaderShapeFoldout){
             using (new EditorGUILayout.VerticalScope("HelpBox")){
@@ -1146,12 +1243,12 @@ public class KumaEffectShaderGUI : ShaderGUI
             }
         }
 
+        EditorGUILayout.Space();
+        EditorGUILayout.Space();
 
         //**************************************************
         //****** Vertex Offset *****************************
         //**************************************************
-        EditorGUILayout.Space();
-        EditorGUILayout.Space();
         SetFoldout(ref _vertexOffsetFoldout, "Vertex Offset");
         if(_vertexOffsetFoldout){
             using (new EditorGUILayout.VerticalScope("HelpBox")){
@@ -1175,11 +1272,12 @@ public class KumaEffectShaderGUI : ShaderGUI
             }
         }
 
+        EditorGUILayout.Space();
+        EditorGUILayout.Space();
+
         //**************************************************
         //****** Fade **************************************
         //**************************************************
-        EditorGUILayout.Space();
-        EditorGUILayout.Space();
         SetFoldout(ref _softParticleFoldout, "Fade");
         if(_softParticleFoldout){
             using (new EditorGUILayout.VerticalScope("HelpBox")){
@@ -1201,11 +1299,12 @@ public class KumaEffectShaderGUI : ShaderGUI
             }
         }
 
+        EditorGUILayout.Space();
+        EditorGUILayout.Space();
+
         //**************************************************
         //****** Rendering Settings ************************
-        //**************************************************
-        EditorGUILayout.Space();
-        EditorGUILayout.Space();
+        //**************************************************        
         SetFoldout(ref _otherFoldout, "Other");
         if(_otherFoldout){
             using (new EditorGUILayout.VerticalScope("HelpBox"))
@@ -1233,10 +1332,9 @@ public class KumaEffectShaderGUI : ShaderGUI
             EditorGUILayout.Space();
 
             using (new EditorGUILayout.VerticalScope("HelpBox")){
-                //for Animation
+                //VRC LV
                 GUILayout.Label("VRCLV", EditorStyles.boldLabel);
                 materialEditor.ShaderProperty(_LightVolumes,Styles.lightVolumes);
-                //materialEditor.ShaderProperty(_AdditiveOnly,Styles.additiveOnly);
                 materialEditor.RangeProperty(_LVColorMultiplier, "Color Multiplier");
             }
 
@@ -1262,7 +1360,6 @@ public class KumaEffectShaderGUI : ShaderGUI
 
         EditorGUILayout.Space();
         EditorGUILayout.Space();
-
         
         void SetFoldout(ref bool foldoutSettings, string title)
         {
@@ -1288,7 +1385,9 @@ public class KumaEffectShaderGUI : ShaderGUI
         }
     
         materialEditor.RenderQueueField();
+
         EditorGUILayout.Space();
+        
         void CacheRenderersUsingThisMaterial(Material material){
 		    m_RenderersUsingThisMaterial.Clear();
 
@@ -1314,6 +1413,7 @@ public class KumaEffectShaderGUI : ShaderGUI
         public static readonly GUIContent useDissolve = new GUIContent("Use Dissolve");
         public static readonly GUIContent AlphaFade = new GUIContent("Use AlphaFade");
         public static readonly GUIContent mainPolar = new GUIContent("Use Main Polar");
+        public static readonly GUIContent cubeMap = new GUIContent("Use CubeMap");
 
         public static readonly GUIContent distort = new GUIContent("Enable UVDistort 1");
         public static readonly GUIContent distort2 = new GUIContent("Enable UVDistort 2");

@@ -1,8 +1,12 @@
 // ref : https://qiita.com/yuji_yasuhara/items/cfe4b08e7438eca06eda
+inline float2 modulo2(float2 value, float2 scale)
+{
+    return floor((value%scale+scale)%scale);
+}
 
 float2 Unity_GradientNoise_Dir_float(float2 p, float Period)
 {
-    p = modulo(p, Period);
+    p = modulo2(p, Period);
     // Permutation and hashing used in webgl-nosie goo.gl/pX7HtC
     p = p % 289;
     float x = (34 * p.x + 1) * p.x % 289 + p.y;
