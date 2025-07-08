@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -128,6 +129,27 @@ public class KumaEffectShaderGUI : ShaderGUI
     protected MaterialProperty _isCustomDataDissolve;
     protected MaterialProperty _useDissolve;
 
+    //Directional Dissolve
+    protected MaterialProperty _useDirectDissolve;
+    protected MaterialProperty _DirectDissolveTex;
+    protected MaterialProperty _DirectDissolveTiling;
+    protected MaterialProperty _DirectDissolvePanning;
+    protected MaterialProperty _DirectDissolveGradNoiseScale;
+    protected MaterialProperty _DirectDissolveThreshold;
+    protected MaterialProperty _DirectDissolveEdgeWidth;
+    protected MaterialProperty _DirectDissolveEdgeColor;
+    protected MaterialProperty _DirectionalDissolveMode;
+    protected MaterialProperty _DirectCyclicScale;
+    protected MaterialProperty _DirectCyclicPanning;
+    protected MaterialProperty _UVMode;
+    protected MaterialProperty _DirectDissolveIsDirectPolar;
+    protected MaterialProperty _DirectDissolveWidth;
+    protected MaterialProperty _DirectMapShearX;
+    protected MaterialProperty _DirectMapShearY;
+    protected MaterialProperty _isLifetimeDirectDissolve;
+    protected MaterialProperty _isCustomDataDirectDissolve;
+    protected MaterialProperty  _StartDirectDissolve;
+
     //Alpha Fade
     protected MaterialProperty _useAlphaFade;
     protected MaterialProperty _useGeneNoise4AF;
@@ -213,6 +235,7 @@ public class KumaEffectShaderGUI : ShaderGUI
     protected MaterialProperty _useCubeMap;
     protected MaterialProperty _CubeMap;
     protected MaterialProperty _CubeMapIntensity;
+    protected MaterialProperty _CubeMapRotation;
 
 
 
@@ -260,6 +283,58 @@ public class KumaEffectShaderGUI : ShaderGUI
 
     private string[] modeNames = {"Voronoi","Simplex","Gradient","Simple","None"};
     private string[] keywords = {"_ISGENERATIVENOISE_VORONOI", "_ISGENERATIVENOISE_SIMPLEX", "_ISGENERATIVENOISE_GRADIENT", "_ISGENERATIVENOISE_SIMPLE", "_ISGENERATIVENOISE_NONE"};
+
+    /**
+    Preset Particle
+    */
+    static string fileName = "KumaEffectShaderGUI t:Script";
+    static ParticleSystem.MinMaxCurve setCurve(){
+        AnimationCurve curve = new AnimationCurve( new Keyframe(0.0f, 0.0f), new Keyframe(0.3f, 1.0f),  new Keyframe(1.0f, 0.0f));
+        for(int i = 0; i < curve.length; i++){
+            Keyframe key = curve[i];
+            key.inTangent = 0.0f;
+            key.outTangent = 0.0f;
+            curve.MoveKey(i, key);
+        }
+        return new ParticleSystem.MinMaxCurve(1.0f, curve);
+    }
+    static void LoadPrefab(){
+        // このスクリプト自身のアセットパスを取得
+        string[] guids = AssetDatabase.FindAssets(fileName);
+        string scriptPath = AssetDatabase.GUIDToAssetPath(guids[0]);
+        scriptPath = scriptPath.Replace("KumaEffectShaderGUI.cs","");
+        string prefabPath = scriptPath + "PresetPrefab/Default.prefab";
+        KumaEffectSetupPreset.defaultPrefabPath = prefabPath;
+        //Prefabのロード
+        var prefabRoot = PrefabUtility.LoadPrefabContents(prefabPath);
+        if(prefabRoot == null){
+            EditorUtility.DisplayDialog("エラー", "「" + prefabPath + "」が存在しません。\nKumaEffectShaderを再インポートしてください。", "閉じる");
+            return;
+        }
+
+        ParticleSystem ps = prefabRoot.GetComponent<ParticleSystem>();
+        
+        KumaEffectShaderGUI.presetStartLifetime = ps.main.startLifetime;
+        KumaEffectShaderGUI.presetStartSpeed = ps.main.startSpeed;
+        KumaEffectShaderGUI.presetStartSize = ps.main.startSize;
+        KumaEffectShaderGUI.presetGravity = ps.main.gravityModifier;
+        KumaEffectShaderGUI.presetRateOverTime = ps.emission.rateOverTime.constant;
+        KumaEffectShaderGUI.presetSizeOverLifetime = ps.sizeOverLifetime.size;
+        KumaEffectShaderGUI.presetRadius = ps.shape.radius;
+        KumaEffectShaderGUI.presetRadiusThickness = ps.shape.radiusThickness;
+        KumaEffectShaderGUI.presetShapeType = ps.shape.shapeType;
+
+    }
+    public static ParticleSystem.MinMaxCurve presetGravity = new ParticleSystem.MinMaxCurve(0.0f);
+    public static ParticleSystem.MinMaxCurve presetStartSize = new ParticleSystem.MinMaxCurve(0.04f, 0.08f);
+    public static ParticleSystem.MinMaxCurve presetStartLifetime = new ParticleSystem.MinMaxCurve(2.0f, 6.0f);
+    public static ParticleSystem.MinMaxCurve presetStartSpeed = new ParticleSystem.MinMaxCurve(0.2f, 1.0f);
+    public static float presetRateOverTime = 10.0f;
+    public static ParticleSystem.MinMaxCurve presetSizeOverLifetime = setCurve();
+    public static float presetRadius = 1.0f;
+    public static float presetRadiusThickness = 1.0f;
+    public static ParticleSystemShapeType presetShapeType = ParticleSystemShapeType.Cone;
+    
 
 
     private List<Vector4> customValue = new List<Vector4>();
@@ -367,6 +442,27 @@ public class KumaEffectShaderGUI : ShaderGUI
          _TrailEdgeDissolveTilling = FindProperty("_TrailEdgeDissolveTilling", props);
          _ToggleXY = FindProperty("_ToggleXY", props);
 
+         //DirectionalDissolve
+         _useDirectDissolve = FindProperty("_useDirectDissolve", props);
+         _DirectDissolveTex = FindProperty("_DirectDissolveTex", props);
+         _DirectDissolveTiling = FindProperty("_DirectDissolveTiling", props);
+         _DirectDissolvePanning = FindProperty("_DirectDissolvePanning", props);
+         _DirectDissolveGradNoiseScale = FindProperty("_DirectDissolveGradNoiseScale", props);
+         _DirectDissolveThreshold = FindProperty("_DirectDissolveThreshold", props);
+         _DirectDissolveEdgeWidth = FindProperty("_DirectDissolveEdgeWidth", props);
+         _DirectDissolveEdgeColor = FindProperty("_DirectDissolveEdgeColor", props);
+         _DirectionalDissolveMode = FindProperty("_DirectionalDissolveMode", props);
+         _DirectCyclicScale = FindProperty("_DirectCyclicScale", props);
+         _DirectCyclicPanning = FindProperty("_DirectCyclicPanning", props);
+         _UVMode = FindProperty("_UVMode", props);
+         _DirectDissolveIsDirectPolar = FindProperty("_DirectDissolveIsDirectPolar", props);
+         _DirectDissolveWidth = FindProperty("_DirectDissolveWidth", props);
+         _DirectMapShearX = FindProperty("_DirectMapShearX", props);
+         _DirectMapShearY = FindProperty("_DirectMapShearY", props);
+         _isLifetimeDirectDissolve = FindProperty("_isLifetimeDirectDissolve", props);
+         _isCustomDataDirectDissolve = FindProperty("_isCustomDataDirectDissolve", props);
+         _StartDirectDissolve = FindProperty("_StartDirectDissolve", props);
+
          //Alpha Fade
          _useAlphaFade = FindProperty("_useAlphaFade", props);
          _useGeneNoise4AF = FindProperty("_useGeneNoise4AF", props);
@@ -460,6 +556,7 @@ public class KumaEffectShaderGUI : ShaderGUI
          _useCubeMap = FindProperty("_useCubeMap", props);
          _CubeMap = FindProperty("_CubeMap", props);
          _CubeMapIntensity = FindProperty("_CubeMapIntensity", props);
+         _CubeMapRotation = FindProperty("_CubeMapRotation", props);
 
 
          _isFirst = FindProperty("_isFirst", props);
@@ -588,7 +685,7 @@ public class KumaEffectShaderGUI : ShaderGUI
                             particle.GetCustomParticleData(customValue, ParticleSystemCustomData.Custom2);
 
                             //CustomData1の設定
-                            customData.SetMode(ParticleSystemCustomData.Custom1, UnityEngine.ParticleSystemCustomDataMode.Color);
+                            customData.SetMode(ParticleSystemCustomData.Custom1, UnityEngine.ParticleSystemCustomDataMode.Vector);
                             //CustomData2の設定
                             customData.SetMode(ParticleSystemCustomData.Custom2, UnityEngine.ParticleSystemCustomDataMode.Vector);
 
@@ -616,6 +713,7 @@ public class KumaEffectShaderGUI : ShaderGUI
             GameObject selectedObject = Selection.activeGameObject;
             if(selectedObject != null){
                 ParticleSystemRenderer psRenderer = selectedObject.GetComponent<ParticleSystemRenderer>();
+                ParticleSystem ps = selectedObject.GetComponent<ParticleSystem>();
 
                 // 確認ダイアログを表示
                 bool confirmed = EditorUtility.DisplayDialog(
@@ -626,30 +724,43 @@ public class KumaEffectShaderGUI : ShaderGUI
                 );
                 if (confirmed)
                 {
-                    
-                    var particle = psRenderer.GetComponent<ParticleSystem>();
+                    //プリセット用Prefabのロード
+                    LoadPrefab();
+                    //再生中のパーティクルを停止
+                    ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+
+                    //トランスフォームの初期化
+                    selectedObject.transform.position = new Vector3(0.0f, 0.0f, 0.0f);
+                    selectedObject.transform.rotation = Quaternion.identity;
+
                     //モジュールの取得
-                    var main = particle.main;
-                    var shape = particle.shape;
-                    var sizeOverLifetime = particle.sizeOverLifetime;
+                    var main = ps.main;
+                    var emission = ps.emission;
+                    var shape = ps.shape;
+                    var sizeOverLifetime = ps.sizeOverLifetime;
+
                     //Mainの初期設定
                     main.duration = 100.0f;
-                    main.startSize = new ParticleSystem.MinMaxCurve(0.04f, 0.08f);
-                    main.startLifetime = new ParticleSystem.MinMaxCurve(2.0f, 6.0f);
-                    main.startSpeed = new ParticleSystem.MinMaxCurve(0.2f, 1.0f);
+                    main.startSize = presetStartSize;
+                    main.startLifetime = presetStartLifetime;
+                    main.startSpeed = presetStartSpeed;
+                    main.gravityModifier = presetGravity;
+
+                    //Emissionの初期設定
+                    emission.rateOverTime = presetRateOverTime;
+
                     //Shapeの初期設定
                     shape.angle = 0.0f;
+                    shape.rotation = new Vector3(-90.0f, 0.0f, 0.0f);
+                    shape.radius = presetRadius;
+                    shape.radiusThickness = presetRadiusThickness;
+                    shape.shapeType = presetShapeType;
+
                     //SizeOverLifetimeの初期設定
                     //SizeOverLifetimeを有効
                     sizeOverLifetime.enabled = true;
-                    AnimationCurve curve = new AnimationCurve( new Keyframe(0.0f, 0.0f), new Keyframe(0.3f, 1.0f),  new Keyframe(1.0f, 0.0f));
-                    for(int i = 0; i < curve.length; i++){
-                        Keyframe key = curve[i];
-                        key.inTangent = 0.0f;
-                        key.outTangent = 0.0f;
-                        curve.MoveKey(i, key);
-                    }
-                    sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1.0f, curve);
+                    sizeOverLifetime.size = presetSizeOverLifetime;
+
                     //Allow Rollオフ
                     psRenderer.allowRoll = false;
                     Debug.Log("Setup完了");
@@ -673,81 +784,100 @@ public class KumaEffectShaderGUI : ShaderGUI
         if (_mainFoldout){
             using (new EditorGUILayout.VerticalScope("HelpBox")){
                 //Maintex
-                GUILayout.Label("Main Texture", EditorStyles.boldLabel);
-                materialEditor.TexturePropertySingleLine(new GUIContent("Main Texture"), _MainTex, _MainColor);
-                if(_isCustomDataOffset.floatValue == 0.0){
-                    EditorGUI.BeginChangeCheck();
+                using (new EditorGUILayout.VerticalScope("HelpBox")){
+                    GUILayout.Label("Main Texture", EditorStyles.boldLabel);
+                    materialEditor.TexturePropertySingleLine(new GUIContent("Main Texture"), _MainTex, _MainColor);
+                    if(_isCustomDataOffset.floatValue == 0.0){
+                        EditorGUI.BeginChangeCheck();
 
-                    Vector4 _MainOffsetVec = EditorGUILayout.Vector2Field("Offset", _MainOffset.vectorValue);
+                        Vector4 _MainOffsetVec = EditorGUILayout.Vector2Field("Offset", _MainOffset.vectorValue);
+                    
+                        if(EditorGUI.EndChangeCheck()){
+                            _MainOffset.vectorValue = _MainOffsetVec;
+                        }
+                    }
+
+                    EditorGUILayout.Space();
+
+                    materialEditor.ShaderProperty(_isCustomIntensity,Styles.customIntensity);
+                    GUILayout.Label("(CustomData2.z)", EditorStyles.label);
+
+                    EditorGUILayout.Space();
+
+                    materialEditor.ShaderProperty(_isCustomDataOffset,Styles.customOffset);
+                    GUILayout.Label("(CustomData2.xy)", EditorStyles.label);
+
+                    EditorGUILayout.Space();
+                    EditorGUILayout.Space();
+
+                    materialEditor.ShaderProperty(_isMainPolar,Styles.mainPolar);
+                    if(_isMainPolar.floatValue == 1.0){
+                        Vector4 _mainCenterVec = EditorGUILayout.Vector2Field("Center", _MainPolarCenter.vectorValue);
+                        if(EditorGUI.EndChangeCheck()){
+                            _MainPolarCenter.vectorValue = _mainCenterVec;
+                        }
+                    }
+                    EditorGUILayout.Space();
+                }
+
+                EditorGUILayout.Space();
+                EditorGUILayout.Space();
+
+                using (new EditorGUILayout.VerticalScope("HelpBox")){
+                    GUILayout.Label("Second Color", EditorStyles.boldLabel);
+                    materialEditor.ShaderProperty(_SecondColor, "Second Color");
+                    materialEditor.RangeProperty(_SecondColorThreshold, "Threshold");
+                    materialEditor.RangeProperty(_Hue, "Hue");
+                    materialEditor.RangeProperty(_Saturation, "Saturation");
+                    EditorGUILayout.Space();
+                }
                 
-                    if(EditorGUI.EndChangeCheck()){
-                        _MainOffset.vectorValue = _MainOffsetVec;
+                EditorGUILayout.Space();
+                EditorGUILayout.Space();
+
+                using (new EditorGUILayout.VerticalScope("HelpBox")){
+                    GUILayout.Label("Second Mask", EditorStyles.boldLabel);
+                    materialEditor.ShaderProperty(_useSecondMask,Styles.secondMask);
+                    if(_useSecondMask.floatValue == 1.0){
+                        materialEditor.TexturePropertySingleLine(new GUIContent("Second Mask"), _SecondMask);
+                        Vector4 _SecondOffsetVec = EditorGUILayout.Vector2Field("Offset", _SecondOffset.vectorValue);
+                        if(EditorGUI.EndChangeCheck()){
+                            _SecondOffset.vectorValue = _SecondOffsetVec;
+                        }
                     }
-                }
-
-                EditorGUILayout.Space();
-
-                materialEditor.ShaderProperty(_isCustomIntensity,Styles.customIntensity);
-                GUILayout.Label("(CustomData2.z)", EditorStyles.label);
-
-                EditorGUILayout.Space();
-
-                materialEditor.ShaderProperty(_isCustomDataOffset,Styles.customOffset);
-                GUILayout.Label("(CustomData2.xy)", EditorStyles.label);
-
-                EditorGUILayout.Space();
-                EditorGUILayout.Space();
-
-                materialEditor.ShaderProperty(_isMainPolar,Styles.mainPolar);
-                if(_isMainPolar.floatValue == 1.0){
-                    Vector4 _mainCenterVec = EditorGUILayout.Vector2Field("Center", _MainPolarCenter.vectorValue);
-                    if(EditorGUI.EndChangeCheck()){
-                        _MainPolarCenter.vectorValue = _mainCenterVec;
-                    }
+                    EditorGUILayout.Space();
                 }
 
                 EditorGUILayout.Space();
                 EditorGUILayout.Space();
 
-                GUILayout.Label("Second Color", EditorStyles.boldLabel);
-                materialEditor.ShaderProperty(_SecondColor, "Second Color");
-                materialEditor.RangeProperty(_SecondColorThreshold, "Threshold");
-                materialEditor.RangeProperty(_Hue, "Hue");
-                materialEditor.RangeProperty(_Saturation, "Saturation");
-                
-                EditorGUILayout.Space();
-                EditorGUILayout.Space();
-
-                GUILayout.Label("Second Mask", EditorStyles.boldLabel);
-                materialEditor.ShaderProperty(_useSecondMask,Styles.secondMask);
-                if(_useSecondMask.floatValue == 1.0){
-                    materialEditor.TexturePropertySingleLine(new GUIContent("Second Mask"), _SecondMask);
-                    Vector4 _SecondOffsetVec = EditorGUILayout.Vector2Field("Offset", _SecondOffset.vectorValue);
-                    if(EditorGUI.EndChangeCheck()){
-                        _SecondOffset.vectorValue = _SecondOffsetVec;
+                using (new EditorGUILayout.VerticalScope("HelpBox")){
+                    GUILayout.Label("MatCap", EditorStyles.boldLabel);
+                    materialEditor.ShaderProperty(_useMatCap,Styles.MatCap);
+                    if(_useMatCap.floatValue == 1.0){
+                        materialEditor.TexturePropertySingleLine(new GUIContent("MatCap"), _MatCapTex);
+                        materialEditor.RangeProperty(_matcapIntensity, "Intensity");
                     }
+                    EditorGUILayout.Space();
                 }
 
                 EditorGUILayout.Space();
                 EditorGUILayout.Space();
 
-                GUILayout.Label("MatCap", EditorStyles.boldLabel);
-                materialEditor.ShaderProperty(_useMatCap,Styles.MatCap);
-                if(_useMatCap.floatValue == 1.0){
-                    materialEditor.TexturePropertySingleLine(new GUIContent("MatCap"), _MatCapTex);
-                    materialEditor.RangeProperty(_matcapIntensity, "Intensity");
-                }    
-
-                EditorGUILayout.Space();
-                EditorGUILayout.Space();
-
-                GUILayout.Label("CubeMap", EditorStyles.boldLabel);
-                materialEditor.ShaderProperty(_useCubeMap,Styles.cubeMap);
-                if(_useCubeMap.floatValue == 1.0){
-                    materialEditor.TexturePropertySingleLine(new GUIContent("CubeMap"), _CubeMap);
-                    materialEditor.RangeProperty(_CubeMapIntensity, "Intensity");
-                }    
-                           
+                using (new EditorGUILayout.VerticalScope("HelpBox")){
+                    GUILayout.Label("CubeMap", EditorStyles.boldLabel);
+                    materialEditor.ShaderProperty(_useCubeMap,Styles.cubeMap);
+                    if(_useCubeMap.floatValue == 1.0){
+                        EditorGUI.BeginChangeCheck();
+                        materialEditor.TexturePropertySingleLine(new GUIContent("CubeMap"), _CubeMap);
+                        materialEditor.RangeProperty(_CubeMapIntensity, "Intensity");
+                        Vector3 _CubeMapRot = EditorGUILayout.Vector3Field("Rotation", _CubeMapRotation.vectorValue);
+                        if(EditorGUI.EndChangeCheck()){
+                            _CubeMapRotation.vectorValue = _CubeMapRot;
+                        }
+                    }
+                    EditorGUILayout.Space();
+                }          
             }
         }
         //**************************************************
@@ -776,6 +906,7 @@ public class KumaEffectShaderGUI : ShaderGUI
                             SetKeyword(material, "_NOISEMODE_SUBTRACT", selected == 2);
                         }
                     }
+                    EditorGUILayout.Space();
                 }
 
                 EditorGUILayout.Space();
@@ -803,6 +934,7 @@ public class KumaEffectShaderGUI : ShaderGUI
                             materialEditor.RangeProperty(_Noise1ShearY, "Shear Y");
                         }
                     }
+                    EditorGUILayout.Space();
                 }
 
                 EditorGUILayout.Space();
@@ -830,6 +962,7 @@ public class KumaEffectShaderGUI : ShaderGUI
                             materialEditor.RangeProperty(_Noise2ShearY, "Shear Y");
                         }
                     }
+                    EditorGUILayout.Space();
                 }
                 EditorGUILayout.Space();
             }
@@ -844,140 +977,152 @@ public class KumaEffectShaderGUI : ShaderGUI
         if(_distortFoldout){
             using (new EditorGUILayout.VerticalScope("HelpBox")){
                 //UV Distortion
-                GUILayout.Label("UV Distort 1", EditorStyles.boldLabel);
-                materialEditor.ShaderProperty(_isUVDistortion,Styles.distort);
-                if(_isUVDistortion.floatValue == 1.0){
-                    materialEditor.ShaderProperty(_useGenerateNoise1,Styles.useGenNoise1);
-                    if(_useGenerateNoise1.floatValue == 1.0){
-                        EditorGUI.BeginChangeCheck();
+                using (new EditorGUILayout.VerticalScope("HelpBox")){
+                    GUILayout.Label("UV Distort 1", EditorStyles.boldLabel);
+                    materialEditor.ShaderProperty(_isUVDistortion,Styles.distort);
+                    if(_isUVDistortion.floatValue == 1.0){
+                        materialEditor.ShaderProperty(_useGenerateNoise1,Styles.useGenNoise1);
+                        if(_useGenerateNoise1.floatValue == 1.0){
+                            EditorGUI.BeginChangeCheck();
 
-                        Vector4 _DistortTileVec2 = EditorGUILayout.Vector2Field("UV Distort 1 Tiling", _UVDistortTiling.vectorValue);
-                        Vector4 _DistortVec2 = EditorGUILayout.Vector2Field("UV Distort 1 Panning", _UVDistortPanning.vectorValue);
+                            Vector4 _DistortTileVec2 = EditorGUILayout.Vector2Field("UV Distort 1 Tiling", _UVDistortTiling.vectorValue);
+                            Vector4 _DistortVec2 = EditorGUILayout.Vector2Field("UV Distort 1 Panning", _UVDistortPanning.vectorValue);
 
-                        if(EditorGUI.EndChangeCheck()){
-                            _UVDistortTiling.vectorValue =  _DistortTileVec2;
-                            _UVDistortPanning.vectorValue = _DistortVec2;
+                            if(EditorGUI.EndChangeCheck()){
+                                _UVDistortTiling.vectorValue =  _DistortTileVec2;
+                                _UVDistortPanning.vectorValue = _DistortVec2;
+                            }
+                            materialEditor.FloatProperty(_GenerateNoise1Strength, "Noise Strength");
+                        }else {
+                            EditorGUI.BeginChangeCheck();
+
+                            Vector4 _DistortTileVec2 = EditorGUILayout.Vector2Field("UV Distort 1 Tiling", _UVDistortTiling.vectorValue);
+                            Vector4 _DistortVec2 = EditorGUILayout.Vector2Field("UV Distort 1 Panning", _UVDistortPanning.vectorValue);
+
+                            if(EditorGUI.EndChangeCheck()){
+                                _UVDistortTiling.vectorValue =  _DistortTileVec2;
+                                _UVDistortPanning.vectorValue = _DistortVec2;
+                            }
+
+                            materialEditor.TexturePropertySingleLine(new GUIContent("UV Distortion 1 Map"), _UVDistortionMap);
                         }
-                        materialEditor.FloatProperty(_GenerateNoise1Strength, "Noise Strength");
-                    }else {
-                        EditorGUI.BeginChangeCheck();
-
-                        Vector4 _DistortTileVec2 = EditorGUILayout.Vector2Field("UV Distort 1 Tiling", _UVDistortTiling.vectorValue);
-                        Vector4 _DistortVec2 = EditorGUILayout.Vector2Field("UV Distort 1 Panning", _UVDistortPanning.vectorValue);
-
-                        if(EditorGUI.EndChangeCheck()){
-                            _UVDistortTiling.vectorValue =  _DistortTileVec2;
-                            _UVDistortPanning.vectorValue = _DistortVec2;
-                        }
-
-                        materialEditor.TexturePropertySingleLine(new GUIContent("UV Distortion 1 Map"), _UVDistortionMap);
+                        materialEditor.RangeProperty(_UVDistortIntensity, "Distort Intensity");
                     }
-                    materialEditor.RangeProperty(_UVDistortIntensity, "Distort Intensity");
+                    EditorGUILayout.Space();
                 }
 
                 EditorGUILayout.Space();
                 EditorGUILayout.Space();
 
                 //UV Distortion 2
-                GUILayout.Label("UV Distort 2", EditorStyles.boldLabel);
-                materialEditor.ShaderProperty(_isUVDistortion2,Styles.distort2);
-                if(_isUVDistortion2.floatValue == 1.0){
-                    materialEditor.ShaderProperty(_useGenerateNoise2,Styles.useGenNoise1);
-                    if(_useGenerateNoise2.floatValue == 1.0){
-                        EditorGUI.BeginChangeCheck();
+                using (new EditorGUILayout.VerticalScope("HelpBox")){
+                    GUILayout.Label("UV Distort 2", EditorStyles.boldLabel);
+                    materialEditor.ShaderProperty(_isUVDistortion2,Styles.distort2);
+                    if(_isUVDistortion2.floatValue == 1.0){
+                        materialEditor.ShaderProperty(_useGenerateNoise2,Styles.useGenNoise1);
+                        if(_useGenerateNoise2.floatValue == 1.0){
+                            EditorGUI.BeginChangeCheck();
 
-                        Vector4 _DistortTileVec2 = EditorGUILayout.Vector2Field("UV Distort 2 Tiling", _UVDistort2Tiling.vectorValue);
-                        Vector4 _DistortVec2 = EditorGUILayout.Vector2Field("UV Distort 2 Panning", _UVDistortion2Panning.vectorValue);
+                            Vector4 _DistortTileVec2 = EditorGUILayout.Vector2Field("UV Distort 2 Tiling", _UVDistort2Tiling.vectorValue);
+                            Vector4 _DistortVec2 = EditorGUILayout.Vector2Field("UV Distort 2 Panning", _UVDistortion2Panning.vectorValue);
 
-                        if(EditorGUI.EndChangeCheck()){
-                            _UVDistort2Tiling.vectorValue =  _DistortTileVec2;
-                            _UVDistortion2Panning.vectorValue = _DistortVec2;
+                            if(EditorGUI.EndChangeCheck()){
+                                _UVDistort2Tiling.vectorValue =  _DistortTileVec2;
+                                _UVDistortion2Panning.vectorValue = _DistortVec2;
+                            }
+                            materialEditor.FloatProperty(_GenerateNoise2Strength, "Noise Strength");
+                        }else {
+                            EditorGUI.BeginChangeCheck();
+
+                            Vector4 _DistortTileVec2 = EditorGUILayout.Vector2Field("UV Distort 2 Tiling", _UVDistort2Tiling.vectorValue);
+                            Vector4 _DistortVec2 = EditorGUILayout.Vector2Field("UV Distort 2 Panning", _UVDistortion2Panning.vectorValue);
+
+                            if(EditorGUI.EndChangeCheck()){
+                                _UVDistort2Tiling.vectorValue =  _DistortTileVec2;
+                                _UVDistortion2Panning.vectorValue = _DistortVec2;
+                            }
+
+                            materialEditor.TexturePropertySingleLine(new GUIContent("UV Distortion 2 Map"), _UVDistortion2Map);
                         }
-                        materialEditor.FloatProperty(_GenerateNoise2Strength, "Noise Strength");
-                    }else {
-                        EditorGUI.BeginChangeCheck();
-
-                        Vector4 _DistortTileVec2 = EditorGUILayout.Vector2Field("UV Distort 2 Tiling", _UVDistort2Tiling.vectorValue);
-                        Vector4 _DistortVec2 = EditorGUILayout.Vector2Field("UV Distort 2 Panning", _UVDistortion2Panning.vectorValue);
-
-                        if(EditorGUI.EndChangeCheck()){
-                            _UVDistort2Tiling.vectorValue =  _DistortTileVec2;
-                            _UVDistortion2Panning.vectorValue = _DistortVec2;
-                        }
-
-                        materialEditor.TexturePropertySingleLine(new GUIContent("UV Distortion 2 Map"), _UVDistortion2Map);
+                        materialEditor.RangeProperty(_Distortion2Intensity, "Distort Intensity");
                     }
-                    materialEditor.RangeProperty(_Distortion2Intensity, "Distort Intensity");
+                    EditorGUILayout.Space();
                 }
 
                 EditorGUILayout.Space();
                 EditorGUILayout.Space();
 
                 //Dissolve Distort
-                GUILayout.Label("Dissolve Distort", EditorStyles.boldLabel);
-                materialEditor.ShaderProperty(_isUVDistortionD,Styles.distortD);
-                if(_isUVDistortionD.floatValue == 1.0){
-                    materialEditor.ShaderProperty(_useGenerateNoiseD,Styles.useGenNoise1);
-                    if(_useGenerateNoiseD.floatValue == 1.0){
-                        EditorGUI.BeginChangeCheck();
+                using (new EditorGUILayout.VerticalScope("HelpBox")){
+                    GUILayout.Label("Dissolve Distort", EditorStyles.boldLabel);
+                    materialEditor.ShaderProperty(_isUVDistortionD,Styles.distortD);
+                    if(_isUVDistortionD.floatValue == 1.0){
+                        materialEditor.ShaderProperty(_useGenerateNoiseD,Styles.useGenNoise1);
+                        if(_useGenerateNoiseD.floatValue == 1.0){
+                            EditorGUI.BeginChangeCheck();
 
-                        Vector4 _DistortTileVec2 = EditorGUILayout.Vector2Field("Dissolve Distort Tiling", _UVDistortDTiling.vectorValue);
-                        Vector4 _DistortVec2 = EditorGUILayout.Vector2Field("Dissolve Distort Panning", _UVDistortionDPanning.vectorValue);
+                            Vector4 _DistortTileVec2 = EditorGUILayout.Vector2Field("Dissolve Distort Tiling", _UVDistortDTiling.vectorValue);
+                            Vector4 _DistortVec2 = EditorGUILayout.Vector2Field("Dissolve Distort Panning", _UVDistortionDPanning.vectorValue);
 
-                        if(EditorGUI.EndChangeCheck()){
-                            _UVDistortDTiling.vectorValue = _DistortTileVec2;
-                            _UVDistortionDPanning.vectorValue = _DistortVec2;
+                            if(EditorGUI.EndChangeCheck()){
+                                _UVDistortDTiling.vectorValue = _DistortTileVec2;
+                                _UVDistortionDPanning.vectorValue = _DistortVec2;
+                            }
+                            materialEditor.FloatProperty(_GenerateNoiseDStrength, "Noise Strength");
+                        }else {
+                            EditorGUI.BeginChangeCheck();
+
+                            Vector4 _DistortTileVec2 = EditorGUILayout.Vector2Field("Dissolve Distort Tiling", _UVDistortDTiling.vectorValue);
+                            Vector4 _DistortVec2 = EditorGUILayout.Vector2Field("Dissolve Distort Panning", _UVDistortionDPanning.vectorValue);
+
+                            if(EditorGUI.EndChangeCheck()){
+                                _UVDistortDTiling.vectorValue = _DistortTileVec2;
+                                _UVDistortionDPanning.vectorValue = _DistortVec2;
+                            }
+
+                            materialEditor.TexturePropertySingleLine(new GUIContent("Dissolve Distortion Map"), _UVDistortionDMap);
                         }
-                        materialEditor.FloatProperty(_GenerateNoiseDStrength, "Noise Strength");
-                    }else {
-                        EditorGUI.BeginChangeCheck();
-
-                        Vector4 _DistortTileVec2 = EditorGUILayout.Vector2Field("Dissolve Distort Tiling", _UVDistortDTiling.vectorValue);
-                        Vector4 _DistortVec2 = EditorGUILayout.Vector2Field("Dissolve Distort Panning", _UVDistortionDPanning.vectorValue);
-
-                        if(EditorGUI.EndChangeCheck()){
-                            _UVDistortDTiling.vectorValue = _DistortTileVec2;
-                            _UVDistortionDPanning.vectorValue = _DistortVec2;
-                        }
-
-                        materialEditor.TexturePropertySingleLine(new GUIContent("Dissolve Distortion Map"), _UVDistortionDMap);
+                        materialEditor.RangeProperty(_DistortionDIntensity, "Distort Intensity");
                     }
-                    materialEditor.RangeProperty(_DistortionDIntensity, "Distort Intensity");
+                    EditorGUILayout.Space();
                 }
 
                 EditorGUILayout.Space();
                 EditorGUILayout.Space();
 
                 //Main Mask Distort
-                GUILayout.Label("Main Mask Distort", EditorStyles.boldLabel);
-                materialEditor.ShaderProperty(_isUVDistortionM,Styles.distortD);
-                if(_isUVDistortionM.floatValue == 1.0){
-                    materialEditor.ShaderProperty(_useGenerateNoiseM,Styles.useGenNoise1);
-                    if(_useGenerateNoiseM.floatValue == 1.0){
-                        EditorGUI.BeginChangeCheck();
+                using (new EditorGUILayout.VerticalScope("HelpBox")){
+                    GUILayout.Label("Main Mask Distort", EditorStyles.boldLabel);
+                    materialEditor.ShaderProperty(_isUVDistortionM,Styles.distortD);
+                    if(_isUVDistortionM.floatValue == 1.0){
+                        materialEditor.ShaderProperty(_useGenerateNoiseM,Styles.useGenNoise1);
+                        if(_useGenerateNoiseM.floatValue == 1.0){
+                            EditorGUI.BeginChangeCheck();
 
-                        Vector4 _DistortTileVec2 = EditorGUILayout.Vector2Field("Main Mask Distort Tiling", _UVDistortionMTiling.vectorValue);
-                        Vector4 _DistortVec2 = EditorGUILayout.Vector2Field("Main Mask Distort Panning", _UVDistortionMPanning.vectorValue);
+                            Vector4 _DistortTileVec2 = EditorGUILayout.Vector2Field("Main Mask Distort Tiling", _UVDistortionMTiling.vectorValue);
+                            Vector4 _DistortVec2 = EditorGUILayout.Vector2Field("Main Mask Distort Panning", _UVDistortionMPanning.vectorValue);
 
-                        if(EditorGUI.EndChangeCheck()){
-                            _UVDistortionMTiling.vectorValue = _DistortTileVec2;
-                            _UVDistortionMPanning.vectorValue = _DistortVec2;
+                            if(EditorGUI.EndChangeCheck()){
+                                _UVDistortionMTiling.vectorValue = _DistortTileVec2;
+                                _UVDistortionMPanning.vectorValue = _DistortVec2;
+                            }
+                            materialEditor.FloatProperty(_GenerateNoiseMStrength, "Noise Strength");
+                        }else {
+                            EditorGUI.BeginChangeCheck();
+
+                            Vector4 _DistortTileVec2 = EditorGUILayout.Vector2Field("Main Mask Distort Tiling", _UVDistortionMTiling.vectorValue);
+                            Vector4 _DistortVec2 = EditorGUILayout.Vector2Field("Main Mask Distort Panning", _UVDistortionMPanning.vectorValue);
+
+                            if(EditorGUI.EndChangeCheck()){
+                                _UVDistortionMTiling.vectorValue = _DistortTileVec2;
+                                _UVDistortionMPanning.vectorValue = _DistortVec2;
+                            }
+
+                            materialEditor.TexturePropertySingleLine(new GUIContent("Main Mask Distortion Map"), _UVDistortionMMap);
                         }
-                        materialEditor.FloatProperty(_GenerateNoiseMStrength, "Noise Strength");
-                    }else {
-                        EditorGUI.BeginChangeCheck();
-
-                        Vector4 _DistortTileVec2 = EditorGUILayout.Vector2Field("Main Mask Distort Tiling", _UVDistortionMTiling.vectorValue);
-                        Vector4 _DistortVec2 = EditorGUILayout.Vector2Field("Main Mask Distort Panning", _UVDistortionMPanning.vectorValue);
-
-                        if(EditorGUI.EndChangeCheck()){
-                            _UVDistortionMTiling.vectorValue = _DistortTileVec2;
-                            _UVDistortionMPanning.vectorValue = _DistortVec2;
-                        }
-
-                        materialEditor.TexturePropertySingleLine(new GUIContent("Main Mask Distortion Map"), _UVDistortionMMap);
+                        materialEditor.RangeProperty(_DistortionMIntensity, "Distort Intensity");
                     }
-                    materialEditor.RangeProperty(_DistortionMIntensity, "Distort Intensity");
+                    EditorGUILayout.Space();
                 }
             }
         }
@@ -990,97 +1135,189 @@ public class KumaEffectShaderGUI : ShaderGUI
         if(_dissolveFoldout){
             using (new EditorGUILayout.VerticalScope("HelpBox")){
                 //Dissolve
-                GUILayout.Label("Dissolve", EditorStyles.boldLabel);
-                materialEditor.ShaderProperty(_useDissolve,Styles.useDissolve);
-                if(_useDissolve.floatValue == 1.0){
-                    materialEditor.TexturePropertySingleLine(new GUIContent("Dissolve Map"), _DissolveMap);
+                using (new EditorGUILayout.VerticalScope("HelpBox")){
+                    GUILayout.Label("Dissolve", EditorStyles.boldLabel);
+                    materialEditor.ShaderProperty(_useDissolve,Styles.useDissolve);
+                    if(_useDissolve.floatValue == 1.0){
+                        materialEditor.TexturePropertySingleLine(new GUIContent("Dissolve Map"), _DissolveMap);
 
-                    EditorGUI.BeginChangeCheck();
-                    Vector4 _TilingVec2 = EditorGUILayout.Vector2Field("Tiling", _DissolveTiling.vectorValue);
-                    Vector4 _PanningVec2 = EditorGUILayout.Vector2Field("Panning", _DissolvePanning.vectorValue);
+                        EditorGUI.BeginChangeCheck();
+                        Vector4 _TilingVec2 = EditorGUILayout.Vector2Field("Tiling", _DissolveTiling.vectorValue);
+                        Vector4 _PanningVec2 = EditorGUILayout.Vector2Field("Panning", _DissolvePanning.vectorValue);
 
-                    materialEditor.RangeProperty(_EdgeWidth, "Edge Width");
-                    materialEditor.ShaderProperty(_EdgeColor, "Edge Color");
-                    materialEditor.ShaderProperty(_isCustomDataDissolve,Styles.customDissolve);
-                    GUILayout.Label("(CustomData2.w)", EditorStyles.label);
-                    if(EditorGUI.EndChangeCheck()){
-                        _DissolveTiling.vectorValue = _TilingVec2;
-                        _DissolvePanning.vectorValue = _PanningVec2;
-                    }
+                        materialEditor.RangeProperty(_EdgeWidth, "Edge Width");
+                        materialEditor.ShaderProperty(_EdgeColor, "Edge Color");
+                        materialEditor.ShaderProperty(_isCustomDataDissolve,Styles.customDissolve);
+                        GUILayout.Label("(CustomData2.w)", EditorStyles.label);
+                        if(EditorGUI.EndChangeCheck()){
+                            _DissolveTiling.vectorValue = _TilingVec2;
+                            _DissolvePanning.vectorValue = _PanningVec2;
+                        }
 
-                    if(_isCustomDataDissolve.floatValue == 0.0){
-                        materialEditor.ShaderProperty(_isLifetimeDissolve,Styles.dissolve);
-                        if(_isLifetimeDissolve.floatValue == 1.0){
-                            materialEditor.RangeProperty(_StartDissolve, "Start Dissolve");
-                        }else {
-                            materialEditor.RangeProperty(_Threshold, "Threshold");
+                        if(_isCustomDataDissolve.floatValue == 0.0){
+                            materialEditor.ShaderProperty(_isLifetimeDissolve,Styles.dissolve);
+                            if(_isLifetimeDissolve.floatValue == 1.0){
+                                materialEditor.RangeProperty(_StartDissolve, "Start Dissolve");
+                            }else {
+                                materialEditor.RangeProperty(_Threshold, "Threshold");
+                            }
+                        }
+                        materialEditor.ShaderProperty(_isDissolvePolar,Styles.polarUV);
+                        if(_isDissolvePolar.floatValue == 1.0){
+                            materialEditor.RangeProperty(_DissolveShearX, "Shear X");
+                            materialEditor.RangeProperty(_DissolveShearY, "Shear Y");
                         }
                     }
-                    materialEditor.ShaderProperty(_isDissolvePolar,Styles.polarUV);
-                    if(_isDissolvePolar.floatValue == 1.0){
-                        materialEditor.RangeProperty(_DissolveShearX, "Shear X");
-                        materialEditor.RangeProperty(_DissolveShearY, "Shear Y");
-                    }
+                    EditorGUILayout.Space();
                 }
 
                 EditorGUILayout.Space();
                 EditorGUILayout.Space();
 
                 //Alpha Fade
-                GUILayout.Label("Alpha Fade", EditorStyles.boldLabel);
-                materialEditor.ShaderProperty(_useAlphaFade,Styles.AlphaFade);
-                if(_useAlphaFade.floatValue == 1.0){
-                    materialEditor.ShaderProperty(_useGeneNoise4AF,Styles.useGenNoise1);
-                    if(_useGeneNoise4AF.floatValue == 1.0){
-                        materialEditor.FloatProperty(_AFNoiseStrength, "Strength");
-                        materialEditor.RangeProperty(_AFNoisePower, "Power");
-                    }else {
-                        materialEditor.TexturePropertySingleLine(new GUIContent("AlphaFade Map"), _AlphaFadeMap);
-                        materialEditor.RangeProperty(_AFNoisePower, "Power");
-                    }
-
-                    EditorGUI.BeginChangeCheck();
-
-                    Vector4 _TilingVec2 = EditorGUILayout.Vector2Field("Tiling", _AlphaFadeTiling.vectorValue);
-                    Vector4 _PanningVec2 = EditorGUILayout.Vector2Field("Panning", _AlphaFadePanning.vectorValue);
-                    if(EditorGUI.EndChangeCheck()){
-                        _AlphaFadeTiling.vectorValue = _TilingVec2;
-                        _AlphaFadePanning.vectorValue = _PanningVec2;
-                    }
-
-                    materialEditor.ShaderProperty(_isCustomDataAlphaFade,Styles.customDissolve);
-                    GUILayout.Label("(CustomData2.w)", EditorStyles.label);
-                    if(_isCustomDataAlphaFade.floatValue == 0.0){
-                        materialEditor.ShaderProperty(_isLifetimeAlphaFade,Styles.dissolve);
-                        if(_isLifetimeAlphaFade.floatValue == 1.0){
-                            materialEditor.RangeProperty(_StartAlphaFade, "Start AlphaFade");
+                using (new EditorGUILayout.VerticalScope("HelpBox")){
+                    GUILayout.Label("Alpha Fade", EditorStyles.boldLabel);
+                    materialEditor.ShaderProperty(_useAlphaFade,Styles.AlphaFade);
+                    if(_useAlphaFade.floatValue == 1.0){
+                        materialEditor.ShaderProperty(_useGeneNoise4AF,Styles.useGenNoise1);
+                        if(_useGeneNoise4AF.floatValue == 1.0){
+                            materialEditor.FloatProperty(_AFNoiseStrength, "Strength");
+                            materialEditor.RangeProperty(_AFNoisePower, "Power");
                         }else {
-                            materialEditor.RangeProperty(_AlphaFadeThreshold, "Threshold");
+                            materialEditor.TexturePropertySingleLine(new GUIContent("AlphaFade Map"), _AlphaFadeMap);
+                            materialEditor.RangeProperty(_AFNoisePower, "Power");
+                        }
+
+                        EditorGUI.BeginChangeCheck();
+
+                        Vector4 _TilingVec2 = EditorGUILayout.Vector2Field("Tiling", _AlphaFadeTiling.vectorValue);
+                        Vector4 _PanningVec2 = EditorGUILayout.Vector2Field("Panning", _AlphaFadePanning.vectorValue);
+                        if(EditorGUI.EndChangeCheck()){
+                            _AlphaFadeTiling.vectorValue = _TilingVec2;
+                            _AlphaFadePanning.vectorValue = _PanningVec2;
+                        }
+
+                        materialEditor.ShaderProperty(_isCustomDataAlphaFade,Styles.customDissolve);
+                        GUILayout.Label("(CustomData2.w)", EditorStyles.label);
+                        if(_isCustomDataAlphaFade.floatValue == 0.0){
+                            materialEditor.ShaderProperty(_isLifetimeAlphaFade,Styles.dissolve);
+                            if(_isLifetimeAlphaFade.floatValue == 1.0){
+                                materialEditor.RangeProperty(_StartAlphaFade, "Start AlphaFade");
+                            }else {
+                                materialEditor.RangeProperty(_AlphaFadeThreshold, "Threshold");
+                            }
                         }
                     }
+                    EditorGUILayout.Space();
                 }
 
                 EditorGUILayout.Space();
                 EditorGUILayout.Space();
 
                 //TrailEdge Dissolve
-                GUILayout.Label("TrailEdge Dissolve", EditorStyles.boldLabel);
-                materialEditor.ShaderProperty(_isTrailEdgeDissolve,Styles.trailEdgeDissolve);
-                if(_isTrailEdgeDissolve.floatValue == 1.0){
-                    materialEditor.TexturePropertySingleLine(new GUIContent("TrailEdge Dissolve Map"), _TrailEdgeDissolveMap);
-                    Vector4 _TrailTilingVec2 = EditorGUILayout.Vector2Field("Tiling", _TrailEdgeDissolveTilling.vectorValue);
-                    Vector4 _TrailPanningVec2 = EditorGUILayout.Vector2Field("Panning", _TrailEdgeDissolveScroll.vectorValue);
+                using (new EditorGUILayout.VerticalScope("HelpBox")){
+                    GUILayout.Label("TrailEdge Dissolve", EditorStyles.boldLabel);
+                    materialEditor.ShaderProperty(_isTrailEdgeDissolve,Styles.trailEdgeDissolve);
+                    if(_isTrailEdgeDissolve.floatValue == 1.0){
+                        materialEditor.TexturePropertySingleLine(new GUIContent("TrailEdge Dissolve Map"), _TrailEdgeDissolveMap);
+                        Vector4 _TrailTilingVec2 = EditorGUILayout.Vector2Field("Tiling", _TrailEdgeDissolveTilling.vectorValue);
+                        Vector4 _TrailPanningVec2 = EditorGUILayout.Vector2Field("Panning", _TrailEdgeDissolveScroll.vectorValue);
 
-                    materialEditor.RangeProperty(_TrailEdgeDissolveNoisePower,"Power");
-                    materialEditor.RangeProperty(_TrailEdgeDissolveLength,"Length");
-                    materialEditor.RangeProperty(_TrailEdgeDissolveThreshold,"Threshold");
-                    materialEditor.ShaderProperty(_isBothDissolve,Styles.bothDissolve);
-                    materialEditor.ShaderProperty(_ToggleXY, Styles.toggleXY);
+                        materialEditor.RangeProperty(_TrailEdgeDissolveNoisePower,"Power");
+                        materialEditor.RangeProperty(_TrailEdgeDissolveLength,"Length");
+                        materialEditor.RangeProperty(_TrailEdgeDissolveThreshold,"Threshold");
+                        materialEditor.ShaderProperty(_isBothDissolve,Styles.bothDissolve);
+                        materialEditor.ShaderProperty(_ToggleXY, Styles.toggleXY);
 
-                    if(EditorGUI.EndChangeCheck()){
-                        _TrailEdgeDissolveTilling.vectorValue = _TrailTilingVec2;
-                        _TrailEdgeDissolveScroll.vectorValue = _TrailPanningVec2;
+                        if(EditorGUI.EndChangeCheck()){
+                            _TrailEdgeDissolveTilling.vectorValue = _TrailTilingVec2;
+                            _TrailEdgeDissolveScroll.vectorValue = _TrailPanningVec2;
+                        }
                     }
+                    EditorGUILayout.Space();
+                }
+
+                EditorGUILayout.Space();
+                EditorGUILayout.Space();
+
+                //Directional Dissolve
+                using (new EditorGUILayout.VerticalScope("HelpBox")){
+                    GUILayout.Label("Directional Dissolve", EditorStyles.boldLabel);
+                    materialEditor.ShaderProperty(_useDirectDissolve, Styles.directDissolve);
+                    if(_useDirectDissolve.floatValue == 1.0){
+                        materialEditor.ShaderProperty(_DirectionalDissolveMode, Styles.directDissolveMode);
+                        if(_DirectionalDissolveMode.floatValue == 0.0){
+                            materialEditor.TexturePropertySingleLine(new GUIContent("Directional Dissolve Map"), _DirectDissolveTex);
+                            Vector4 _DirectTilingVec2 = EditorGUILayout.Vector2Field("Tiling", _DirectDissolveTiling.vectorValue);
+                            Vector4 _DirectPanningVec2 = EditorGUILayout.Vector2Field("Panning", _DirectDissolvePanning.vectorValue);
+                            if(EditorGUI.EndChangeCheck()){
+                                _DirectDissolveTiling.vectorValue = _DirectTilingVec2;
+                                _DirectDissolvePanning.vectorValue = _DirectPanningVec2;
+                            }
+
+                        }else if(_DirectionalDissolveMode.floatValue == 1.0){
+                            materialEditor.TexturePropertySingleLine(new GUIContent("Directional Dissolve Map"), _DirectDissolveTex);
+                            Vector4 _DirectTilingVec2 = EditorGUILayout.Vector2Field("Tiling", _DirectDissolveTiling.vectorValue);
+                            Vector4 _DirectPanningVec2 = EditorGUILayout.Vector2Field("Panning", _DirectDissolvePanning.vectorValue);
+                            materialEditor.RangeProperty(_DirectMapShearX, "Shear X");
+                            materialEditor.RangeProperty(_DirectMapShearY, "Shear Y");
+                            if(EditorGUI.EndChangeCheck()){
+                                _DirectDissolveTiling.vectorValue = _DirectTilingVec2;
+                                _DirectDissolvePanning.vectorValue = _DirectPanningVec2;
+                            }
+
+                        }else if(_DirectionalDissolveMode.floatValue == 2.0){
+                            materialEditor.FloatProperty(_DirectDissolveGradNoiseScale, "Scale");
+                            Vector4 _DirectTilingVec2 = EditorGUILayout.Vector2Field("Tiling", _DirectDissolveTiling.vectorValue);
+                            Vector4 _DirectPanningVec2 = EditorGUILayout.Vector2Field("Panning", _DirectDissolvePanning.vectorValue);
+                            if(EditorGUI.EndChangeCheck()){
+                                _DirectDissolveTiling.vectorValue = _DirectTilingVec2;
+                                _DirectDissolvePanning.vectorValue = _DirectPanningVec2;
+                            }
+
+                        }else if(_DirectionalDissolveMode.floatValue == 3.0){
+                            materialEditor.FloatProperty(_DirectDissolveGradNoiseScale, "Scale");
+                            Vector4 _DirectTilingVec2 = EditorGUILayout.Vector2Field("Tiling", _DirectDissolveTiling.vectorValue);
+                            Vector4 _DirectPanningVec2 = EditorGUILayout.Vector2Field("Panning", _DirectDissolvePanning.vectorValue);
+                            materialEditor.RangeProperty(_DirectMapShearX, "Shear X");
+                            materialEditor.RangeProperty(_DirectMapShearY, "Shear Y");
+                            if(EditorGUI.EndChangeCheck()){
+                                _DirectDissolveTiling.vectorValue = _DirectTilingVec2;
+                                _DirectDissolvePanning.vectorValue = _DirectPanningVec2;
+                            }
+
+                        }else if(_DirectionalDissolveMode.floatValue == 4.0){
+                            materialEditor.ShaderProperty(_DirectCyclicScale, "Scale");
+                            Vector4 _NoisePanningVec3 = EditorGUILayout.Vector3Field("Panning", _DirectCyclicPanning.vectorValue);
+                            if(EditorGUI.EndChangeCheck()){
+                                _DirectCyclicPanning.vectorValue = _NoisePanningVec3;
+                            }
+
+                        }
+
+                        EditorGUILayout.Space();
+                        EditorGUILayout.Space();
+
+                        materialEditor.ShaderProperty(_UVMode, Styles.direction);
+                        materialEditor.RangeProperty(_DirectDissolveWidth, "Dissolve Width");
+                        materialEditor.ShaderProperty(_DirectDissolveIsDirectPolar, Styles.polarUV);
+
+                        EditorGUILayout.Space();
+                        
+                        materialEditor.ShaderProperty(_isCustomDataDirectDissolve,Styles.customDissolve);
+                        GUILayout.Label("(CustomData1.x)", EditorStyles.label);
+                        if(_isCustomDataDirectDissolve.floatValue == 0.0){
+                            materialEditor.ShaderProperty(_isLifetimeDirectDissolve,Styles.dissolve);
+                            if(_isLifetimeDirectDissolve.floatValue == 1.0){
+                                materialEditor.RangeProperty(_StartDirectDissolve, "Start Dissolve");
+                            }else {
+                                materialEditor.RangeProperty(_DirectDissolveThreshold, "Threshold");
+                            }
+                        }
+                        materialEditor.RangeProperty(_DirectDissolveEdgeWidth, "Edge Width");
+                        materialEditor.ShaderProperty(_DirectDissolveEdgeColor, "Edge Color");
+                    }
+                    EditorGUILayout.Space();
                 }
             }
         }
@@ -1415,10 +1652,10 @@ public class KumaEffectShaderGUI : ShaderGUI
         public static readonly GUIContent mainPolar = new GUIContent("Use Main Polar");
         public static readonly GUIContent cubeMap = new GUIContent("Use CubeMap");
 
-        public static readonly GUIContent distort = new GUIContent("Enable UVDistort 1");
-        public static readonly GUIContent distort2 = new GUIContent("Enable UVDistort 2");
+        public static readonly GUIContent distort = new GUIContent("Use UVDistort 1");
+        public static readonly GUIContent distort2 = new GUIContent("Use UVDistort 2");
         public static readonly GUIContent useGenNoise1 = new GUIContent("Use Generate Noise");
-        public static readonly GUIContent distortD = new GUIContent("Enable DissolveUVDistort");
+        public static readonly GUIContent distortD = new GUIContent("Use DissolveUVDistort");
 
         public static readonly GUIContent fresnel = new GUIContent("Use Fresnel");
         public static readonly GUIContent inverse = new GUIContent("Inverse");
@@ -1435,21 +1672,24 @@ public class KumaEffectShaderGUI : ShaderGUI
 
         public static readonly GUIContent VertexOffset = new GUIContent("Use Vertex Offset");
 
-        public static readonly GUIContent softParticle = new GUIContent("Enable Soft Particle");
-        public static readonly GUIContent cameraFade = new GUIContent("Enable Camera Fade");
+        public static readonly GUIContent softParticle = new GUIContent("Use Soft Particle");
+        public static readonly GUIContent cameraFade = new GUIContent("Use Camera Fade");
 
         public static readonly GUIContent customDissolve = new GUIContent("Use CustomData");
         public static readonly GUIContent dissolve = new GUIContent("Enable Lifetime Dissolve");
         public static readonly GUIContent trailEdgeDissolve = new GUIContent("Use Trail Edge Dissolve");
         public static readonly GUIContent bothDissolve = new GUIContent("is Both Side Dissolve");
         public static readonly GUIContent toggleXY = new GUIContent("Toggle XY");
+        public static readonly GUIContent directDissolve = new GUIContent("Use Directional Dissolve");
+        public static readonly GUIContent directDissolveMode = new GUIContent("Mode");
+        public static readonly GUIContent direction = new GUIContent("Direction");
 
         public static readonly GUIContent subtract = new GUIContent("is Noise Subtract");
         public static readonly GUIContent blink = new GUIContent("is Blinking Emission");
 
         public static readonly GUIContent instancing = new GUIContent("Enable GPU Instancing");
 
-        public static readonly GUIContent lightVolumes = new GUIContent("Enable Light Volumes");
+        public static readonly GUIContent lightVolumes = new GUIContent("Use Light Volumes");
         public static readonly GUIContent additiveOnly = new GUIContent("Additive Only");
 
         public static GUIContent streamApplyToAllSystemsText = EditorGUIUtility.TrTextContent("Apply to Systems", "Apply the vertex stream layout to all Particle Systems using this material");
