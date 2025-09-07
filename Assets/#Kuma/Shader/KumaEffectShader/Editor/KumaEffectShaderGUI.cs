@@ -33,6 +33,7 @@ public class KumaEffectShaderGUI : ShaderGUI
 
     protected MaterialProperty _MainPolarCenter;
     protected MaterialProperty _isMainPolar;
+    protected MaterialProperty _IsFrameBlending;
 
     //Noise1
     protected MaterialProperty _NoiseMode;
@@ -104,6 +105,7 @@ public class KumaEffectShaderGUI : ShaderGUI
     //RandomMul
     protected MaterialProperty _RandomMul;
     protected MaterialProperty _RandomMulY;
+    protected MaterialProperty _DisssolveRandomOffsetIntensity;
 
     //Soft Particle
     protected MaterialProperty _SoftParticle;
@@ -360,6 +362,7 @@ public class KumaEffectShaderGUI : ShaderGUI
 
          _MainPolarCenter = FindProperty("_MainPolarCenter", props);
          _isMainPolar = FindProperty("_isMainPolar", props);
+         _IsFrameBlending = FindProperty("_IsFrameBlending", props);
         
          //Noise1
          _NoiseMode = FindProperty("_NoiseMode", props);
@@ -544,6 +547,7 @@ public class KumaEffectShaderGUI : ShaderGUI
          //RandomMul
          _RandomMul = FindProperty("_RandomMul", props);
          _RandomMulY = FindProperty("_RandomMulY", props);
+         _DisssolveRandomOffsetIntensity = FindProperty("_DisssolveRandomOffsetIntensity", props);
 
          _EmissionIntensity = FindProperty("_EmissionIntensity", props);
 
@@ -646,6 +650,8 @@ public class KumaEffectShaderGUI : ShaderGUI
         streams.Add(ParticleSystemVertexStream.Custom2XYZW);
         streams.Add(ParticleSystemVertexStream.Center);
         streams.Add(ParticleSystemVertexStream.AgePercent);
+        streams.Add(ParticleSystemVertexStream.UV2);
+        streams.Add(ParticleSystemVertexStream.AnimBlend);
 
         string warnings = "";
 		List<ParticleSystemVertexStream> rendererStreams = new List<ParticleSystemVertexStream>();
@@ -730,8 +736,8 @@ public class KumaEffectShaderGUI : ShaderGUI
                     ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
                     //トランスフォームの初期化
-                    selectedObject.transform.position = new Vector3(0.0f, 0.0f, 0.0f);
-                    selectedObject.transform.rotation = Quaternion.identity;
+                    selectedObject.transform.localPosition = new Vector3(0.0f, 0.0f, 0.0f);
+                    selectedObject.transform.localRotation = Quaternion.identity;
 
                     //モジュールの取得
                     var main = ps.main;
@@ -817,6 +823,7 @@ public class KumaEffectShaderGUI : ShaderGUI
                             _MainPolarCenter.vectorValue = _mainCenterVec;
                         }
                     }
+                    materialEditor.ShaderProperty(_IsFrameBlending, new GUIContent("Flip-Book Frame Blending"));
                     EditorGUILayout.Space();
                 }
 
@@ -1592,6 +1599,7 @@ public class KumaEffectShaderGUI : ShaderGUI
                 GUILayout.Label("CustomVertexStreams", EditorStyles.boldLabel);
                 materialEditor.RangeProperty(_RandomMul,"Random Scroll Ratio X");
                 materialEditor.RangeProperty(_RandomMulY,"Random Scroll Ratio Y");
+                materialEditor.RangeProperty(_DisssolveRandomOffsetIntensity, "Dissolve Random Offset Intensity");
             }
         }
 

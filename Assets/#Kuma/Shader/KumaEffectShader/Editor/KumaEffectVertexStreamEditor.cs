@@ -48,6 +48,8 @@ public class KumaEffectVertexStreamEditor : EditorWindow
         streams.Add(ParticleSystemVertexStream.Custom2XYZW);
         streams.Add(ParticleSystemVertexStream.Center);
         streams.Add(ParticleSystemVertexStream.AgePercent);
+        streams.Add(ParticleSystemVertexStream.UV2);
+        streams.Add(ParticleSystemVertexStream.AnimBlend);
         //-------------------------------------------------------------
 
         // 対象のオブジェクトに含まれるすべてのパーティクルシステムを取得
