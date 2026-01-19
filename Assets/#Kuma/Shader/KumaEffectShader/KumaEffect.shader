@@ -1438,7 +1438,7 @@ Shader "Kuma/KumaEffect"
 					float Glitter889 = staticSwitch924;
 					float4 temp_cast_40 = (1.0).xxxx;
 					float2 texCoord1746 = IN.ase_texcoord3.xy * float2( 1,1 ) + float2( 0,0 );
-					float4 temp_cast_41 = (( saturate( ( saturate( ( texCoord1746.x -  (-1.0 + ( _GradientWidthU - 0.0 ) * ( 1.0 - -1.0 ) / ( 1.0 - 0.0 ) ) ) ) * _GradientPowerU ) ) * saturate( ( saturate( ( ( 1.0 - texCoord1746.x ) -  (-1.0 + ( _GradientWidthOneMinusU - 0.0 ) * ( 1.0 - -1.0 ) / ( 1.0 - 0.0 ) ) ) ) * _GradientPowerOneMinusU ) ) * saturate( ( saturate( ( texCoord1746.y -  (-1.0 + ( _GradientWidthV - 0.0 ) * ( 1.0 - -1.0 ) / ( 1.0 - 0.0 ) ) ) ) * _GradientPowerV ) ) * saturate( ( saturate( ( ( 1.0 - texCoord1746.x ) -  (-1.0 + ( _GradientWidthOneMinusV - 0.0 ) * ( 1.0 - -1.0 ) / ( 1.0 - 0.0 ) ) ) ) * _GradientPowerOneMinusV ) ) )).xxxx;
+					float4 temp_cast_41 = (( saturate( ( saturate( ( texCoord1746.x -  (-1.0 + ( _GradientWidthU - 0.0 ) * ( 1.0 - -1.0 ) / ( 1.0 - 0.0 ) ) ) ) * _GradientPowerU ) ) * saturate( ( saturate( ( ( 1.0 - texCoord1746.x ) -  (-1.0 + ( _GradientWidthOneMinusU - 0.0 ) * ( 1.0 - -1.0 ) / ( 1.0 - 0.0 ) ) ) ) * _GradientPowerOneMinusU ) ) * saturate( ( saturate( ( texCoord1746.y -  (-1.0 + ( _GradientWidthV - 0.0 ) * ( 1.0 - -1.0 ) / ( 1.0 - 0.0 ) ) ) ) * _GradientPowerV ) ) * saturate( ( saturate( ( ( 1.0 - texCoord1746.y ) -  (-1.0 + ( _GradientWidthOneMinusV - 0.0 ) * ( 1.0 - -1.0 ) / ( 1.0 - 0.0 ) ) ) ) * _GradientPowerOneMinusV ) ) )).xxxx;
 					float2 appendResult953 = (float2(randomOffset1100 , randomOffset2101));
 					float2 texCoord954 = IN.ase_texcoord3.xy * _GradientMaskTilling + appendResult953;
 					float2 panner956 = ( 1.0 * _Time.y * _GradientMaskPanning + texCoord954);
@@ -3521,7 +3521,7 @@ WireConnection;968;1;964;0
 WireConnection;1765;0;1746;1
 WireConnection;1767;0;1748;0
 WireConnection;1766;0;1763;0
-WireConnection;1775;0;1746;1
+WireConnection;1775;0;1746;2
 WireConnection;1776;0;1781;0
 WireConnection;1783;0;1782;0
 WireConnection;984;0;962;0
@@ -3946,4 +3946,4 @@ WireConnection;1200;2;1193;4
 WireConnection;200;0;357;0
 WireConnection;200;1;712;0
 ASEEND*/
-//CHKSM=1AEC526E9B24B21A40052CB05E34562C32245887
+//CHKSM=0F99302EE78440DAE982A24E142A7F49B3E42C46
