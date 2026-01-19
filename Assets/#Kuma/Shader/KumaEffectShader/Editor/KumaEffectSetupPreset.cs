@@ -16,6 +16,8 @@ public class KumaEffectSetupPreset : EditorWindow
     [Range(0.0f,1.0f)]
     static float radiusThickness = 1.0f;
     static ParticleSystem.MinMaxCurve sizeOverLifetime = KumaEffectShaderGUI.presetSizeOverLifetime;
+    //static ParticleSystem.MinMaxCurve customData2Z = KumaEffectShaderGUI.presetCustomData2Z;
+    static float customData2Z = KumaEffectShaderGUI.presetCustomData2Z.constant;
 
     UnityEngine.GUIContent[] list =  new[]
     {
@@ -191,6 +193,7 @@ public class KumaEffectSetupPreset : EditorWindow
             KumaEffectShaderGUI.presetGravity = importParticle.main.gravityModifier;
             KumaEffectShaderGUI.presetRateOverTime = importParticle.emission.rateOverTime.constant;
             KumaEffectShaderGUI.presetSizeOverLifetime = importParticle.sizeOverLifetime.size;
+            //KumaEffectShaderGUI.presetCustomData2Z = importParticle.customData.GetVector(ParticleSystemCustomData.Custom2, 2);
             //Editor上の値を更新する。
             Refresh();
         }
@@ -516,6 +519,12 @@ public class KumaEffectSetupPreset : EditorWindow
                 break;
         }
 
+        EditorGUILayout.Space(10.0f);
+        
+        //CustomData
+        GUILayout.Label("CustomData2.z", EditorStyles.boldLabel);
+        customData2Z = EditorGUILayout.FloatField("Value", customData2Z, GUILayout.Width(100));
+
         EditorGUILayout.Space();
 
         if (GUILayout.Button("更新"))
@@ -591,6 +600,7 @@ public class KumaEffectSetupPreset : EditorWindow
         var prefabEmission = ps.emission;
         var prefabSizeOverLifetimeParent = ps.sizeOverLifetime;
         var prefabShape = ps.shape;
+        var prefabCustomData = ps.customData;
 
         var prefabStartLifetime = ps.main.startLifetime;
         var prefabStartSize = ps.main.startSize;
@@ -765,6 +775,10 @@ public class KumaEffectSetupPreset : EditorWindow
                 break;
         }
 
+        //Custom Data
+        prefabCustomData.SetMode(ParticleSystemCustomData.Custom2, UnityEngine.ParticleSystemCustomDataMode.Vector);
+        prefabCustomData.SetVector(ParticleSystemCustomData.Custom2, 2, customData2Z);
+
         PrefabUtility.SaveAsPrefabAsset(prefabRoot, prefabPath);
         PrefabUtility.UnloadPrefabContents(prefabRoot);
         EditorUtility.DisplayDialog("完了", dialogText, "閉じる");
@@ -789,6 +803,7 @@ public class KumaEffectSetupPreset : EditorWindow
         startSize = new ParticleSystem.MinMaxCurve(0.04f, 0.08f);
         gravity = 0.0f;
         rateOverTime = 10.0f;
+        customData2Z = 1.0f;
 
         AnimationCurve curve = new AnimationCurve( new Keyframe(0.0f, 0.0f), new Keyframe(0.3f, 1.0f),  new Keyframe(1.0f, 0.0f));
         for(int i = 0; i < curve.length; i++){
@@ -838,6 +853,7 @@ public class KumaEffectSetupPreset : EditorWindow
                 selectedShape = 4;
                 break;
         }
+        customData2Z = importParticle.customData.GetVector(ParticleSystemCustomData.Custom2, 2).constant;
 
         Submit("プリセットを更新しました。");
         ShowWindow();

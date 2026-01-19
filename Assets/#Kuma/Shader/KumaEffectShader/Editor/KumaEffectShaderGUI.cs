@@ -30,6 +30,10 @@ public class KumaEffectShaderGUI : ShaderGUI
     protected MaterialProperty _useMatCap;
     protected MaterialProperty _MatCapTex;
     protected MaterialProperty _matcapIntensity;
+    protected MaterialProperty _CAOffsetX;
+    protected MaterialProperty _CAOffsetY;
+    protected MaterialProperty _CARotate;
+    protected MaterialProperty _UseMainCA;
 
     protected MaterialProperty _MainPolarCenter;
     protected MaterialProperty _isMainPolar;
@@ -47,6 +51,9 @@ public class KumaEffectShaderGUI : ShaderGUI
     protected MaterialProperty _Noise1ShearX;
     protected MaterialProperty _Noise1ShearY;
     protected MaterialProperty _useNoise1;
+    protected MaterialProperty _Noise1CAOffsetX;
+    protected MaterialProperty _Noise1CAOffsetY;
+    protected MaterialProperty _UseNoise1CA;
 
     //Noise2
     protected MaterialProperty _Noise2;
@@ -106,6 +113,7 @@ public class KumaEffectShaderGUI : ShaderGUI
     protected MaterialProperty _RandomMul;
     protected MaterialProperty _RandomMulY;
     protected MaterialProperty _DisssolveRandomOffsetIntensity;
+    protected MaterialProperty _Noise1RandomOffsetIntensity;
 
     //Soft Particle
     protected MaterialProperty _SoftParticle;
@@ -212,12 +220,15 @@ public class KumaEffectShaderGUI : ShaderGUI
     protected MaterialProperty _CenterStrength;
     protected MaterialProperty _OutsideSize;
     protected MaterialProperty _OutsideStrength;
+    protected MaterialProperty _UseDustShapeCA;
+    protected MaterialProperty _DustShapeCAOffsetX;
+    protected MaterialProperty _DustShapeCAOffsetY;
     //Circle
     protected MaterialProperty _useCircle;
     protected MaterialProperty _CircleWidth;
     //Glitter
     protected MaterialProperty _useGlitter;
-    //Gradient Mask
+    //Gradient Old
     protected MaterialProperty _useGradientMask;
     protected MaterialProperty _GradientMaskTilling;
     protected MaterialProperty _GradientMaskPanning;
@@ -227,6 +238,18 @@ public class KumaEffectShaderGUI : ShaderGUI
     protected MaterialProperty _HorizontalBorder;
     protected MaterialProperty _VerticalLength;
     protected MaterialProperty _VerticalBorder;
+
+    //Gradient Latest
+    protected MaterialProperty _GradientMode;
+    protected MaterialProperty _GradientWidthU;
+    protected MaterialProperty _GradientWidthOneMinusU;
+    protected MaterialProperty _GradientWidthV;
+    protected MaterialProperty _GradientWidthOneMinusV;
+    protected MaterialProperty _GradientPowerU;
+    protected MaterialProperty _GradientPowerOneMinusU;
+    protected MaterialProperty _GradientPowerV;
+    protected MaterialProperty _GradientPowerOneMinusV;
+
 
     //VRCLV
     protected MaterialProperty _LightVolumes;
@@ -325,7 +348,7 @@ public class KumaEffectShaderGUI : ShaderGUI
         KumaEffectShaderGUI.presetRadius = ps.shape.radius;
         KumaEffectShaderGUI.presetRadiusThickness = ps.shape.radiusThickness;
         KumaEffectShaderGUI.presetShapeType = ps.shape.shapeType;
-
+        KumaEffectShaderGUI.presetCustomData2Z = ps.customData.GetVector(ParticleSystemCustomData.Custom2, 2);
     }
     public static ParticleSystem.MinMaxCurve presetGravity = new ParticleSystem.MinMaxCurve(0.0f);
     public static ParticleSystem.MinMaxCurve presetStartSize = new ParticleSystem.MinMaxCurve(0.04f, 0.08f);
@@ -336,6 +359,7 @@ public class KumaEffectShaderGUI : ShaderGUI
     public static float presetRadius = 1.0f;
     public static float presetRadiusThickness = 1.0f;
     public static ParticleSystemShapeType presetShapeType = ParticleSystemShapeType.Cone;
+    public static ParticleSystem.MinMaxCurve presetCustomData2Z = new ParticleSystem.MinMaxCurve(1.0f);
     
 
 
@@ -359,6 +383,11 @@ public class KumaEffectShaderGUI : ShaderGUI
          _useMatCap = FindProperty("_useMatCap", props);
          _MatCapTex = FindProperty("_MatCapTex", props);
          _matcapIntensity = FindProperty("_matcapIntensity", props);
+         _CAOffsetX = FindProperty("_CAOffsetX", props);
+         _CAOffsetY = FindProperty("_CAOffsetY", props);
+         _CARotate = FindProperty("_CARotate", props);
+         _UseMainCA = FindProperty("_UseMainCA", props);
+         
 
          _MainPolarCenter = FindProperty("_MainPolarCenter", props);
          _isMainPolar = FindProperty("_isMainPolar", props);
@@ -374,6 +403,9 @@ public class KumaEffectShaderGUI : ShaderGUI
          _isNoise1Polar = FindProperty("_isNoise1Polar", props);
          _Noise1ShearX = FindProperty("_Noise1ShearX", props);
          _Noise1ShearY = FindProperty("_Noise1ShearY", props);
+         _Noise1CAOffsetX = FindProperty("_Noise1CAOffsetX", props);
+         _Noise1CAOffsetY = FindProperty("_Noise1CAOffsetY", props);
+         _UseNoise1CA = FindProperty("_UseNoise1CA", props);
 
          _useNoise2 = FindProperty("_useNoise2", props);
          _Noise2 = FindProperty("_Noise2", props);
@@ -515,7 +547,10 @@ public class KumaEffectShaderGUI : ShaderGUI
          _useCircle = FindProperty("_useCircle", props);
          _CircleWidth = FindProperty("_CircleWidth", props);
          _useGlitter = FindProperty("_useGlitter", props);
-
+         _UseDustShapeCA = FindProperty("_UseDustShapeCA", props);
+         _DustShapeCAOffsetX = FindProperty("_DustShapeCAOffsetX", props);
+         _DustShapeCAOffsetY = FindProperty("_DustShapeCAOffsetY", props);
+         //Gradient Old
          _useGradientMask = FindProperty("_useGradientMask", props);
          _GradientMaskTilling = FindProperty("_GradientMaskTilling", props);
          _GradientMaskPanning = FindProperty("_GradientMaskPanning", props);
@@ -525,7 +560,16 @@ public class KumaEffectShaderGUI : ShaderGUI
          _HorizontalBorder = FindProperty("_HorizontalBorder", props);
          _VerticalLength = FindProperty("_VerticalLength", props);
          _VerticalBorder = FindProperty("_VerticalBorder", props);
-         
+         //Gradient Latest
+         _GradientMode = FindProperty("_GradientMode", props);
+         _GradientWidthU = FindProperty("_GradientWidthU", props);
+         _GradientWidthOneMinusU = FindProperty("_GradientWidthOneMinusU", props);
+         _GradientWidthV = FindProperty("_GradientWidthV", props);
+         _GradientWidthOneMinusV = FindProperty("_GradientWidthOneMinusV", props);
+         _GradientPowerU = FindProperty("_GradientPowerU", props);
+         _GradientPowerOneMinusU = FindProperty("_GradientPowerOneMinusU", props);
+         _GradientPowerV = FindProperty("_GradientPowerV", props);
+         _GradientPowerOneMinusV = FindProperty("_GradientPowerOneMinusV", props);
 
          //Vertex Offset
          _useVertexOffset = FindProperty("_useVertexOffset", props);
@@ -548,6 +592,7 @@ public class KumaEffectShaderGUI : ShaderGUI
          _RandomMul = FindProperty("_RandomMul", props);
          _RandomMulY = FindProperty("_RandomMulY", props);
          _DisssolveRandomOffsetIntensity = FindProperty("_DisssolveRandomOffsetIntensity", props);
+         _Noise1RandomOffsetIntensity = FindProperty("_Noise1RandomOffsetIntensity", props);
 
          _EmissionIntensity = FindProperty("_EmissionIntensity", props);
 
@@ -668,6 +713,7 @@ public class KumaEffectShaderGUI : ShaderGUI
         EditorGUILayout.Space();
         EditorGUI.BeginChangeCheck();
         // Vertex Stream Handler
+        // Ref:https://github.com/TwoTailsGames/Unity-Built-in-Shaders/blob/master/Editor/StandardParticlesShaderGUI.cs
 		if (warnings != "")
         {
 			EditorGUILayout.HelpBox("Incorrect or missing vertex streams detected:\n" + warnings, MessageType.Warning, true);
@@ -686,6 +732,7 @@ public class KumaEffectShaderGUI : ShaderGUI
                             var particle = renderer.GetComponent<ParticleSystem>();
                             var customData = particle.customData;
                             customData.enabled = true;
+                            renderer.allowRoll = false;
 
                             
                             particle.GetCustomParticleData(customValue, ParticleSystemCustomData.Custom2);
@@ -744,6 +791,7 @@ public class KumaEffectShaderGUI : ShaderGUI
                     var emission = ps.emission;
                     var shape = ps.shape;
                     var sizeOverLifetime = ps.sizeOverLifetime;
+                    var customData = ps.customData;
 
                     //Mainの初期設定
                     main.duration = 100.0f;
@@ -766,6 +814,10 @@ public class KumaEffectShaderGUI : ShaderGUI
                     //SizeOverLifetimeを有効
                     sizeOverLifetime.enabled = true;
                     sizeOverLifetime.size = presetSizeOverLifetime;
+
+                    //CustomDataの初期設定
+                    customData.enabled = true;
+                    customData.SetVector(ParticleSystemCustomData.Custom2, 2, presetCustomData2Z);
 
                     //Allow Rollオフ
                     psRenderer.allowRoll = false;
@@ -823,7 +875,15 @@ public class KumaEffectShaderGUI : ShaderGUI
                             _MainPolarCenter.vectorValue = _mainCenterVec;
                         }
                     }
+                    EditorGUILayout.Space();
                     materialEditor.ShaderProperty(_IsFrameBlending, new GUIContent("Flip-Book Frame Blending"));
+                    EditorGUILayout.Space();
+                    materialEditor.ShaderProperty(_UseMainCA, Styles.mainCA);
+                    if(_UseMainCA.floatValue == 1.0){
+                        materialEditor.RangeProperty(_CAOffsetX,"CA Offset X");
+                        materialEditor.RangeProperty(_CAOffsetY,"CA Offset Y");
+                        materialEditor.RangeProperty(_CARotate,"CA Rotate");
+                    }
                     EditorGUILayout.Space();
                 }
 
@@ -939,6 +999,11 @@ public class KumaEffectShaderGUI : ShaderGUI
                         if(_isNoise1Polar.floatValue == 1.0){
                             materialEditor.RangeProperty(_Noise1ShearX, "Shear X");
                             materialEditor.RangeProperty(_Noise1ShearY, "Shear Y");
+                        }
+                        materialEditor.ShaderProperty(_UseNoise1CA, Styles.mainCA);
+                        if(_UseNoise1CA.floatValue == 1.0){
+                            materialEditor.RangeProperty(_Noise1CAOffsetX, "CA Offset X");
+                            materialEditor.RangeProperty(_Noise1CAOffsetY, "CA Offset Y");
                         }
                     }
                     EditorGUILayout.Space();
@@ -1100,7 +1165,7 @@ public class KumaEffectShaderGUI : ShaderGUI
                 //Main Mask Distort
                 using (new EditorGUILayout.VerticalScope("HelpBox")){
                     GUILayout.Label("Main Mask Distort", EditorStyles.boldLabel);
-                    materialEditor.ShaderProperty(_isUVDistortionM,Styles.distortD);
+                    materialEditor.ShaderProperty(_isUVDistortionM,Styles.distortM);
                     if(_isUVDistortionM.floatValue == 1.0){
                         materialEditor.ShaderProperty(_useGenerateNoiseM,Styles.useGenNoise1);
                         if(_useGenerateNoiseM.floatValue == 1.0){
@@ -1438,6 +1503,12 @@ public class KumaEffectShaderGUI : ShaderGUI
                         materialEditor.RangeProperty(_CenterStrength, "Center Intensity");
                         materialEditor.RangeProperty(_OutsideSize, "Outside Size");
                         materialEditor.RangeProperty(_OutsideStrength, "Outside Intensity");
+                        EditorGUILayout.Space();
+                        materialEditor.ShaderProperty(_UseDustShapeCA,Styles.mainCA);
+                        if(_UseDustShapeCA.floatValue == 1.0){
+                            materialEditor.RangeProperty(_DustShapeCAOffsetX, "Offset X");
+                            materialEditor.RangeProperty(_DustShapeCAOffsetY, "Offset Y");
+                        }
                     }
                     EditorGUILayout.Space();
                 }
@@ -1462,23 +1533,46 @@ public class KumaEffectShaderGUI : ShaderGUI
                 if(_useDust.floatValue == 0.0 && _useCircle.floatValue  == 0.0 && _useGlitter.floatValue  == 0.0 ){
                     materialEditor.ShaderProperty(_useGradientMask, Styles.Gradient);
                     if(_useGradientMask.floatValue == 1.0){
-                        
-                        EditorGUI.BeginChangeCheck();
-                        materialEditor.TexturePropertySingleLine(new GUIContent("Noise Map"), _GradientNoiseMap);
-                        Vector4 _TrailTilingVec2 = EditorGUILayout.Vector2Field("Tiling", _GradientMaskTilling.vectorValue);
-                        Vector4 _TrailPanningVec2 = EditorGUILayout.Vector2Field("Panning", _GradientMaskPanning.vectorValue);
-                        materialEditor.RangeProperty(_MaskNoisePower, "Power");
+                        materialEditor.ShaderProperty(_GradientMode, Styles.directDissolveMode);
+                        if(_GradientMode.floatValue == 0.0f)
+                        {
+                            GUILayout.Label("U", EditorStyles.boldLabel);
+                            materialEditor.RangeProperty(_GradientWidthU, "Width");
+                            materialEditor.RangeProperty(_GradientPowerU, "Power");
+                            EditorGUILayout.Space();
 
-                        EditorGUILayout.Space();
-                        materialEditor.RangeProperty(_HorizontalLength, "Horizontal Length");
-                        //materialEditor.RangeProperty(_HorizontalBorder, "Horizontal Border");
+                            GUILayout.Label("OneMinusU", EditorStyles.boldLabel);
+                            materialEditor.RangeProperty(_GradientWidthOneMinusU, "Width");
+                            materialEditor.RangeProperty(_GradientPowerOneMinusU, "Power");
+                            EditorGUILayout.Space();
 
-                        materialEditor.RangeProperty(_VerticalLength, "Vertical Length");
-                        //materialEditor.RangeProperty(_VerticalBorder, "Vertical Border");
+                            GUILayout.Label("V", EditorStyles.boldLabel);
+                            materialEditor.RangeProperty(_GradientWidthV, "Width");
+                            materialEditor.RangeProperty(_GradientPowerV, "Power");
+                            EditorGUILayout.Space();
 
-                        if(EditorGUI.EndChangeCheck()){
-                            _GradientMaskTilling.vectorValue = _TrailTilingVec2;
-                            _GradientMaskPanning.vectorValue = _TrailPanningVec2;
+                            GUILayout.Label("OneMinusV", EditorStyles.boldLabel);
+                            materialEditor.RangeProperty(_GradientWidthOneMinusV, "Width");
+                            materialEditor.RangeProperty(_GradientPowerOneMinusV, "Power");
+
+                        }else if(_GradientMode.floatValue == 1.0f){
+                            EditorGUI.BeginChangeCheck();
+                            materialEditor.TexturePropertySingleLine(new GUIContent("Noise Map"), _GradientNoiseMap);
+                            Vector4 _TrailTilingVec2 = EditorGUILayout.Vector2Field("Tiling", _GradientMaskTilling.vectorValue);
+                            Vector4 _TrailPanningVec2 = EditorGUILayout.Vector2Field("Panning", _GradientMaskPanning.vectorValue);
+                            materialEditor.RangeProperty(_MaskNoisePower, "Power");
+
+                            EditorGUILayout.Space();
+                            materialEditor.RangeProperty(_HorizontalLength, "Horizontal Length");
+                            //materialEditor.RangeProperty(_HorizontalBorder, "Horizontal Border");
+
+                            materialEditor.RangeProperty(_VerticalLength, "Vertical Length");
+                            //materialEditor.RangeProperty(_VerticalBorder, "Vertical Border");
+
+                            if(EditorGUI.EndChangeCheck()){
+                                _GradientMaskTilling.vectorValue = _TrailTilingVec2;
+                                _GradientMaskPanning.vectorValue = _TrailPanningVec2;
+                            }
                         }
                         EditorGUILayout.Space();
                          
@@ -1600,6 +1694,7 @@ public class KumaEffectShaderGUI : ShaderGUI
                 materialEditor.RangeProperty(_RandomMul,"Random Scroll Ratio X");
                 materialEditor.RangeProperty(_RandomMulY,"Random Scroll Ratio Y");
                 materialEditor.RangeProperty(_DisssolveRandomOffsetIntensity, "Dissolve Random Offset Intensity");
+                materialEditor.RangeProperty(_Noise1RandomOffsetIntensity, "Noise1 Random Offset Intensity");
             }
         }
 
@@ -1659,11 +1754,13 @@ public class KumaEffectShaderGUI : ShaderGUI
         public static readonly GUIContent AlphaFade = new GUIContent("Use AlphaFade");
         public static readonly GUIContent mainPolar = new GUIContent("Use Main Polar");
         public static readonly GUIContent cubeMap = new GUIContent("Use CubeMap");
+        public static readonly GUIContent mainCA = new GUIContent("Use Chromatic Aberration");
 
         public static readonly GUIContent distort = new GUIContent("Use UVDistort 1");
         public static readonly GUIContent distort2 = new GUIContent("Use UVDistort 2");
         public static readonly GUIContent useGenNoise1 = new GUIContent("Use Generate Noise");
         public static readonly GUIContent distortD = new GUIContent("Use DissolveUVDistort");
+        public static readonly GUIContent distortM = new GUIContent("Use Main Mask Distort");
 
         public static readonly GUIContent fresnel = new GUIContent("Use Fresnel");
         public static readonly GUIContent inverse = new GUIContent("Inverse");
