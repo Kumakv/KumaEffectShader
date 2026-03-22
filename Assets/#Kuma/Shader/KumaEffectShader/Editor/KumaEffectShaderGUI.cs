@@ -250,6 +250,20 @@ public class KumaEffectShaderGUI : ShaderGUI
     protected MaterialProperty _GradientPowerV;
     protected MaterialProperty _GradientPowerOneMinusV;
 
+    // 5-Tones Coloring
+    protected MaterialProperty _use5Tones;
+    protected MaterialProperty _HighlightsColor;
+    protected MaterialProperty _BrightsColor;
+    protected MaterialProperty _MidtonesColor;
+    protected MaterialProperty _DarktonesColor;
+    protected MaterialProperty _ShadowsColor;
+    protected MaterialProperty _HighlightsRange;
+    protected MaterialProperty _BrightsRange;
+    protected MaterialProperty _MidtonesRange;
+    protected MaterialProperty _DarktonesRange;
+    protected MaterialProperty _ShadowsRange;
+
+
 
     //VRCLV
     protected MaterialProperty _LightVolumes;
@@ -296,6 +310,7 @@ public class KumaEffectShaderGUI : ShaderGUI
     public static bool _vertexOffsetFoldout = true;
     public static bool _softParticleFoldout = true;
     public static bool _otherFoldout = true;
+    public static bool _5TonesFoldout = true;
     
 
     GUIStyle foldoutStyle;
@@ -570,6 +585,19 @@ public class KumaEffectShaderGUI : ShaderGUI
          _GradientPowerOneMinusU = FindProperty("_GradientPowerOneMinusU", props);
          _GradientPowerV = FindProperty("_GradientPowerV", props);
          _GradientPowerOneMinusV = FindProperty("_GradientPowerOneMinusV", props);
+
+         // 5-Tones Coloring
+         _use5Tones = FindProperty("_use5Tones", props);
+         _HighlightsColor = FindProperty("_HighlightsColor", props);
+         _BrightsColor = FindProperty("_BrightsColor", props);
+         _MidtonesColor = FindProperty("_MidtonesColor", props);
+         _DarktonesColor = FindProperty("_DarktonesColor", props);
+         _ShadowsColor = FindProperty("_ShadowsColor", props);
+         _HighlightsRange = FindProperty("_HighlightsRange", props);
+         _BrightsRange = FindProperty("_BrightsRange", props);
+         _MidtonesRange = FindProperty("_MidtonesRange", props);
+         _DarktonesRange = FindProperty("_DarktonesRange", props);
+         _ShadowsRange = FindProperty("_ShadowsRange", props);
 
          //Vertex Offset
          _useVertexOffset = FindProperty("_useVertexOffset", props);
@@ -1397,6 +1425,34 @@ public class KumaEffectShaderGUI : ShaderGUI
         EditorGUILayout.Space();
         EditorGUILayout.Space();
 
+        //**************************************************
+        //****** 5-Tones Coloring **************************
+        //**************************************************
+        SetFoldout(ref _5TonesFoldout, "5-Tones Coloring");
+        if (_5TonesFoldout)
+        {
+            using (new EditorGUILayout.VerticalScope("HelpBox"))
+            {
+                GUILayout.Label("5-Tones Coloring", EditorStyles.boldLabel);
+                materialEditor.ShaderProperty(_use5Tones,"Use 5-Tones");
+                if(_use5Tones.floatValue == 1.0){
+                    materialEditor.ShaderProperty(_HighlightsColor, "Highlights Color");
+                    materialEditor.ShaderProperty(_BrightsColor, "Brights Color");
+                    materialEditor.ShaderProperty(_MidtonesColor, "Midtones Color");
+                    materialEditor.ShaderProperty(_DarktonesColor, "Darktones Color");
+                    materialEditor.ShaderProperty(_ShadowsColor, "Shadows Color");
+                    materialEditor.RangeProperty(_HighlightsRange, "Highlights Range");
+                    materialEditor.RangeProperty(_BrightsRange, "Brights Range");
+                    materialEditor.RangeProperty(_MidtonesRange, "Midtones Range");
+                    materialEditor.RangeProperty(_DarktonesRange, "Darktones Range");
+                    materialEditor.RangeProperty(_ShadowsRange, "Shadows Range");
+                }
+            }
+
+        }
+
+        EditorGUILayout.Space();
+        EditorGUILayout.Space();
         //**************************************************
         //****** Fresnel ***********************************
         //**************************************************        
