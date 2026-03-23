@@ -34,6 +34,9 @@ public class KumaEffectShaderGUI : ShaderGUI
     protected MaterialProperty _CAOffsetY;
     protected MaterialProperty _CARotate;
     protected MaterialProperty _UseMainCA;
+    protected MaterialProperty _useRotate;
+    protected MaterialProperty _Angle;
+    protected MaterialProperty _RandomAngleMultiplier;
 
     protected MaterialProperty _MainPolarCenter;
     protected MaterialProperty _isMainPolar;
@@ -402,6 +405,9 @@ public class KumaEffectShaderGUI : ShaderGUI
          _CAOffsetY = FindProperty("_CAOffsetY", props);
          _CARotate = FindProperty("_CARotate", props);
          _UseMainCA = FindProperty("_UseMainCA", props);
+         _useRotate = FindProperty("_useRotate", props);
+         _Angle = FindProperty("_Angle", props);
+         _RandomAngleMultiplier = FindProperty("_RandomAngleMultiplier", props);
          
 
          _MainPolarCenter = FindProperty("_MainPolarCenter", props);
@@ -881,6 +887,11 @@ public class KumaEffectShaderGUI : ShaderGUI
                         if(EditorGUI.EndChangeCheck()){
                             _MainOffset.vectorValue = _MainOffsetVec;
                         }
+                    }
+                    materialEditor.ShaderProperty(_useRotate,"Use Rotate");
+                    if (_useRotate.floatValue == 1.0){
+                        materialEditor.RangeProperty(_Angle,"Angle");
+                        materialEditor.RangeProperty(_RandomAngleMultiplier,"Random Angle Multiplier");
                     }
 
                     EditorGUILayout.Space();
