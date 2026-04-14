@@ -285,6 +285,8 @@ public class KumaEffectShaderGUI : ShaderGUI
 
     protected MaterialProperty _isFirst;
 
+    protected MaterialProperty _isOnlyTextureAlpha;
+
     MaterialProperty _Cull;
     //MaterialProperty _Blending;
     MaterialProperty _SrcBlend;
@@ -643,6 +645,8 @@ public class KumaEffectShaderGUI : ShaderGUI
 
 
          _isFirst = FindProperty("_isFirst", props);
+
+         _isOnlyTextureAlpha = FindProperty("_isOnlyTextureAlpha", props);
 
          _Cull = FindProperty("_Cull", props);
          _SrcBlend = FindProperty("_SrcBlend", props);
@@ -1722,6 +1726,8 @@ public class KumaEffectShaderGUI : ShaderGUI
                 //materialEditor.ShaderProperty(_Blending, "Blend Mode");
                 materialEditor.ShaderProperty(_SrcBlend, "Source Blend");
                 materialEditor.ShaderProperty(_DstBlend, "Destination Blend");
+                EditorGUILayout.Space();
+                materialEditor.ShaderProperty(_isOnlyTextureAlpha, "Texture Alpha Only");
                 EditorGUILayout.Space();
                 EditorGUILayout.Space();
 
