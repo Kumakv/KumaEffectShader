@@ -162,6 +162,7 @@ public class KumaEffectShaderGUI : ShaderGUI
     protected MaterialProperty _isLifetimeDirectDissolve;
     protected MaterialProperty _isCustomDataDirectDissolve;
     protected MaterialProperty  _StartDirectDissolve;
+    protected MaterialProperty _DirectDissolveEdgeSmooth;
 
     //Alpha Fade
     protected MaterialProperty _useAlphaFade;
@@ -520,6 +521,7 @@ public class KumaEffectShaderGUI : ShaderGUI
          _isLifetimeDirectDissolve = FindProperty("_isLifetimeDirectDissolve", props);
          _isCustomDataDirectDissolve = FindProperty("_isCustomDataDirectDissolve", props);
          _StartDirectDissolve = FindProperty("_StartDirectDissolve", props);
+         _DirectDissolveEdgeSmooth = FindProperty("_DirectDissolveEdgeSmooth", props);
 
          //Alpha Fade
          _useAlphaFade = FindProperty("_useAlphaFade", props);
@@ -1360,6 +1362,7 @@ public class KumaEffectShaderGUI : ShaderGUI
                     GUILayout.Label("Directional Dissolve", EditorStyles.boldLabel);
                     materialEditor.ShaderProperty(_useDirectDissolve, Styles.directDissolve);
                     if(_useDirectDissolve.floatValue == 1.0){
+                        materialEditor.ShaderProperty(_DirectDissolveEdgeSmooth, new GUIContent("Smooth Edge"));
                         materialEditor.ShaderProperty(_DirectionalDissolveMode, Styles.directDissolveMode);
                         if(_DirectionalDissolveMode.floatValue == 0.0){
                             materialEditor.TexturePropertySingleLine(new GUIContent("Directional Dissolve Map"), _DirectDissolveTex);
