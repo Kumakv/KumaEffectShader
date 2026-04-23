@@ -57,6 +57,7 @@ public class KumaEffectShaderGUI : ShaderGUI
     protected MaterialProperty _Noise1CAOffsetX;
     protected MaterialProperty _Noise1CAOffsetY;
     protected MaterialProperty _UseNoise1CA;
+    protected MaterialProperty _UseNoise1SplitColorTex;
 
     //Noise2
     protected MaterialProperty _Noise2;
@@ -69,6 +70,7 @@ public class KumaEffectShaderGUI : ShaderGUI
     protected MaterialProperty _Noise2ShearX;
     protected MaterialProperty _Noise2ShearY;
     protected MaterialProperty _useNoise2;
+    protected MaterialProperty _UseNoise2SplitColorTex;
 
     //Distort 1
     protected MaterialProperty _isUVDistortion;
@@ -430,6 +432,7 @@ public class KumaEffectShaderGUI : ShaderGUI
          _Noise1CAOffsetX = FindProperty("_Noise1CAOffsetX", props);
          _Noise1CAOffsetY = FindProperty("_Noise1CAOffsetY", props);
          _UseNoise1CA = FindProperty("_UseNoise1CA", props);
+         _UseNoise1SplitColorTex = FindProperty("_UseNoise1SplitColorTex", props);
 
          _useNoise2 = FindProperty("_useNoise2", props);
          _Noise2 = FindProperty("_Noise2", props);
@@ -439,6 +442,7 @@ public class KumaEffectShaderGUI : ShaderGUI
          _isNoise2Polar = FindProperty("_isNoise2Polar", props);
          _Noise2ShearX = FindProperty("_Noise2ShearX", props);
          _Noise2ShearY = FindProperty("_Noise2ShearY", props);
+         _UseNoise2SplitColorTex = FindProperty("_UseNoise2SplitColorTex", props);
         
          //UV Distort 1
          _isUVDistortion = FindProperty("_isUVDistortion1", props);
@@ -1050,6 +1054,20 @@ public class KumaEffectShaderGUI : ShaderGUI
                             materialEditor.RangeProperty(_Noise1CAOffsetX, "CA Offset X");
                             materialEditor.RangeProperty(_Noise1CAOffsetY, "CA Offset Y");
                         }
+
+                        int selected = EditorGUILayout.Popup("Use Color", (int)_UseNoise1SplitColorTex.floatValue, new[] { "Default", "R", "G", "B", "A" });
+
+                        _UseNoise1SplitColorTex.floatValue = selected;
+                        if(EditorGUI.EndChangeCheck()){
+                            foreach (Material material in materialEditor.targets)
+                            {
+                                SetKeyword(material, "_USENOISE1SPLITCOLORTEX_DEFAULT", selected == 0);
+                                SetKeyword(material, "_USENOISE1SPLITCOLORTEX_R", selected == 1);
+                                SetKeyword(material, "_USENOISE1SPLITCOLORTEX_G", selected == 2);
+                                SetKeyword(material, "_USENOISE1SPLITCOLORTEX_B", selected == 3);
+                                SetKeyword(material, "_USENOISE1SPLITCOLORTEX_A", selected == 4);
+                            }
+                        }
                     }
                     EditorGUILayout.Space();
                 }
@@ -1077,6 +1095,20 @@ public class KumaEffectShaderGUI : ShaderGUI
                         if(_isNoise2Polar.floatValue == 1.0){
                             materialEditor.RangeProperty(_Noise2ShearX, "Shear X");
                             materialEditor.RangeProperty(_Noise2ShearY, "Shear Y");
+                        }
+
+                        int selected = EditorGUILayout.Popup("Use Color", (int)_UseNoise2SplitColorTex.floatValue, new[] { "Default", "R", "G", "B", "A" });
+
+                        _UseNoise2SplitColorTex.floatValue = selected;
+                        if(EditorGUI.EndChangeCheck()){
+                            foreach (Material material in materialEditor.targets)
+                            {
+                                SetKeyword(material, "_USENOISE2SPLITCOLORTEX_DEFAULT", selected == 0);
+                                SetKeyword(material, "_USENOISE2SPLITCOLORTEX_R", selected == 1);
+                                SetKeyword(material, "_USENOISE2SPLITCOLORTEX_G", selected == 2);
+                                SetKeyword(material, "_USENOISE2SPLITCOLORTEX_B", selected == 3);
+                                SetKeyword(material, "_USENOISE2SPLITCOLORTEX_A", selected == 4);
+                            }
                         }
                     }
                     EditorGUILayout.Space();
