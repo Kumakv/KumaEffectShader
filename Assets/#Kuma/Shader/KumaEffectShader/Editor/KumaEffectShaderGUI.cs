@@ -58,7 +58,9 @@ public class KumaEffectShaderGUI : ShaderGUI
     protected MaterialProperty _Noise1CAOffsetY;
     protected MaterialProperty _UseNoise1CA;
     protected MaterialProperty _UseNoise1SplitColorTex;
-
+    protected MaterialProperty _Noise1RemapMin;
+    protected MaterialProperty _Noise1RemapMax;
+    
     //Noise2
     protected MaterialProperty _Noise2;
     protected MaterialProperty _Noise2XPanning;
@@ -71,6 +73,8 @@ public class KumaEffectShaderGUI : ShaderGUI
     protected MaterialProperty _Noise2ShearY;
     protected MaterialProperty _useNoise2;
     protected MaterialProperty _UseNoise2SplitColorTex;
+    protected MaterialProperty _Noise2RemapMin;
+    protected MaterialProperty _Noise2RemapMax;
 
     //Distort 1
     protected MaterialProperty _isUVDistortion;
@@ -433,6 +437,8 @@ public class KumaEffectShaderGUI : ShaderGUI
          _Noise1CAOffsetY = FindProperty("_Noise1CAOffsetY", props);
          _UseNoise1CA = FindProperty("_UseNoise1CA", props);
          _UseNoise1SplitColorTex = FindProperty("_UseNoise1SplitColorTex", props);
+         _Noise1RemapMin = FindProperty("_Noise1RemapMin", props);
+         _Noise1RemapMax = FindProperty("_Noise1RemapMax", props);
 
          _useNoise2 = FindProperty("_useNoise2", props);
          _Noise2 = FindProperty("_Noise2", props);
@@ -443,6 +449,8 @@ public class KumaEffectShaderGUI : ShaderGUI
          _Noise2ShearX = FindProperty("_Noise2ShearX", props);
          _Noise2ShearY = FindProperty("_Noise2ShearY", props);
          _UseNoise2SplitColorTex = FindProperty("_UseNoise2SplitColorTex", props);
+         _Noise2RemapMin = FindProperty("_Noise2RemapMin", props);
+         _Noise2RemapMax = FindProperty("_Noise2RemapMax", props);
         
          //UV Distort 1
          _isUVDistortion = FindProperty("_isUVDistortion1", props);
@@ -1044,6 +1052,10 @@ public class KumaEffectShaderGUI : ShaderGUI
                             _Noise1Panning.vectorValue = _NoiseVec2;
                         }
                         materialEditor.RangeProperty(_Noise1Power, "Noise Power");
+                        EditorGUILayout.Space();
+                        materialEditor.ShaderProperty(_Noise1RemapMin, "Remap Min");
+                        materialEditor.ShaderProperty(_Noise1RemapMax, "Remap Max");
+                        EditorGUILayout.Space();
                         materialEditor.ShaderProperty(_isNoise1Polar,Styles.polarUV);
                         if(_isNoise1Polar.floatValue == 1.0){
                             materialEditor.RangeProperty(_Noise1ShearX, "Shear X");
@@ -1090,6 +1102,10 @@ public class KumaEffectShaderGUI : ShaderGUI
                             _Noise2Panning.vectorValue = _NoiseVec2;
                         }
                         materialEditor.RangeProperty(_Noise2Power, "Noise Power");
+                        EditorGUILayout.Space();
+                        materialEditor.ShaderProperty(_Noise2RemapMin, "Remap Min");
+                        materialEditor.ShaderProperty(_Noise2RemapMax, "Remap Max");
+                        EditorGUILayout.Space();
                         materialEditor.ShaderProperty(_isNoise2Polar,Styles.polarUV);
                         if(_isNoise2Polar.floatValue == 1.0){
                             materialEditor.RangeProperty(_Noise2ShearX, "Shear X");
