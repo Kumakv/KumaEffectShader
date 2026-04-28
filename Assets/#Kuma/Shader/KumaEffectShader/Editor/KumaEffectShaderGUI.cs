@@ -1055,7 +1055,7 @@ public class KumaEffectShaderGUI : ShaderGUI
                             materialEditor.RangeProperty(_Noise1CAOffsetY, "CA Offset Y");
                         }
 
-                        int selected = EditorGUILayout.Popup("Use Color", (int)_UseNoise1SplitColorTex.floatValue, new[] { "Default", "R", "G", "B", "A" });
+                        int selected = EditorGUILayout.Popup("Use Color", (int)_UseNoise1SplitColorTex.floatValue, new[] { "Default", "R", "G", "B" });
 
                         _UseNoise1SplitColorTex.floatValue = selected;
                         if(EditorGUI.EndChangeCheck()){
@@ -1096,7 +1096,7 @@ public class KumaEffectShaderGUI : ShaderGUI
                             materialEditor.RangeProperty(_Noise2ShearY, "Shear Y");
                         }
 
-                        int selected = EditorGUILayout.Popup("Use Color", (int)_UseNoise2SplitColorTex.floatValue, new[] { "Default", "R", "G", "B", "A" });
+                        int selected = EditorGUILayout.Popup("Use Color", (int)_UseNoise2SplitColorTex.floatValue, new[] { "Default", "R", "G", "B" });
 
                         _UseNoise2SplitColorTex.floatValue = selected;
                         if(EditorGUI.EndChangeCheck()){
