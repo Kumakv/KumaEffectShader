@@ -1065,7 +1065,6 @@ public class KumaEffectShaderGUI : ShaderGUI
                                 SetKeyword(material, "_USENOISE1SPLITCOLORTEX_R", selected == 1);
                                 SetKeyword(material, "_USENOISE1SPLITCOLORTEX_G", selected == 2);
                                 SetKeyword(material, "_USENOISE1SPLITCOLORTEX_B", selected == 3);
-                                SetKeyword(material, "_USENOISE1SPLITCOLORTEX_A", selected == 4);
                             }
                         }
                     }
@@ -1107,7 +1106,6 @@ public class KumaEffectShaderGUI : ShaderGUI
                                 SetKeyword(material, "_USENOISE2SPLITCOLORTEX_R", selected == 1);
                                 SetKeyword(material, "_USENOISE2SPLITCOLORTEX_G", selected == 2);
                                 SetKeyword(material, "_USENOISE2SPLITCOLORTEX_B", selected == 3);
-                                SetKeyword(material, "_USENOISE2SPLITCOLORTEX_A", selected == 4);
                             }
                         }
                     }

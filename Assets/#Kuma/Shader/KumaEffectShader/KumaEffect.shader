@@ -228,8 +228,8 @@ Shader "Kuma/KumaEffect"
 		_RandomAngleMultiplier( "Random Angle Multiplier", Range( 0, 3 ) ) = 0
 		[Toggle( _USEROTATE_ON )] _useRotate( "useRotate", Float ) = 0
 		[Toggle( _ISONLYTEXTUREALPHA_ON )] _isOnlyTextureAlpha( "isOnlyTextureAlpha", Float ) = 0
-		[KeywordEnum( Default,R,G,B,A )] _UseNoise1SplitColorTex( "UseNoise1SplitColorTex", Float ) = 0
-		[KeywordEnum( Default,R,G,B,A )] _UseNoise2SplitColorTex( "UseNoise2SplitColorTex", Float ) = 0
+		[KeywordEnum( Default,R,G,B )] _UseNoise1SplitColorTex( "UseNoise1SplitColorTex", Float ) = 0
+		[KeywordEnum( Default,R,G,B )] _UseNoise2SplitColorTex( "UseNoise2SplitColorTex", Float ) = 0
 
 	}
 
@@ -321,12 +321,12 @@ Shader "Kuma/KumaEffect"
 				#pragma shader_feature_local _NOISEMODE_MULTIPLY _NOISEMODE_ADD _NOISEMODE_SUBTRACT
 				#pragma shader_feature_local _USENOISE1_ON
 				#pragma shader_feature_local _USENOISE2_ON
-				#pragma shader_feature_local _USENOISE1SPLITCOLORTEX_DEFAULT _USENOISE1SPLITCOLORTEX_R _USENOISE1SPLITCOLORTEX_G _USENOISE1SPLITCOLORTEX_B _USENOISE1SPLITCOLORTEX_A
+				#pragma shader_feature_local _USENOISE1SPLITCOLORTEX_DEFAULT _USENOISE1SPLITCOLORTEX_R _USENOISE1SPLITCOLORTEX_G _USENOISE1SPLITCOLORTEX_B
 				#pragma shader_feature_local _ISNOISE1POLAR_ON
 				#pragma shader_feature_local _USENOISE1CA_ON
 				#pragma shader_feature_local _ISUVDISTORTION1_ON
 				#pragma shader_feature_local _USEGENERATENOISE1_ON
-				#pragma shader_feature_local _USENOISE2SPLITCOLORTEX_DEFAULT _USENOISE2SPLITCOLORTEX_R _USENOISE2SPLITCOLORTEX_G _USENOISE2SPLITCOLORTEX_B _USENOISE2SPLITCOLORTEX_A
+				#pragma shader_feature_local _USENOISE2SPLITCOLORTEX_DEFAULT _USENOISE2SPLITCOLORTEX_R _USENOISE2SPLITCOLORTEX_G _USENOISE2SPLITCOLORTEX_B
 				#pragma shader_feature_local _ISNOISE2POLAR_ON
 				#pragma shader_feature_local _ISUVDISTORTION2_ON
 				#pragma shader_feature_local _USEGENERATENOISE2_ON
@@ -990,7 +990,6 @@ Shader "Kuma/KumaEffect"
 					float4 temp_cast_7 = (break1912.r).xxxx;
 					float4 temp_cast_8 = (break1912.g).xxxx;
 					float4 temp_cast_9 = (break1912.b).xxxx;
-					float4 temp_cast_10 = (break1912.a).xxxx;
 					#if defined( _USENOISE1SPLITCOLORTEX_DEFAULT )
 					float4 staticSwitch1911 = staticSwitch404;
 					#elif defined( _USENOISE1SPLITCOLORTEX_R )
@@ -999,13 +998,11 @@ Shader "Kuma/KumaEffect"
 					float4 staticSwitch1911 = temp_cast_8;
 					#elif defined( _USENOISE1SPLITCOLORTEX_B )
 					float4 staticSwitch1911 = temp_cast_9;
-					#elif defined( _USENOISE1SPLITCOLORTEX_A )
-					float4 staticSwitch1911 = temp_cast_10;
 					#else
 					float4 staticSwitch1911 = staticSwitch404;
 					#endif
-					float4 temp_cast_11 = (_Noise1Power).xxxx;
-					float4 temp_output_141_0 = saturate( pow( staticSwitch1911 , temp_cast_11 ) );
+					float4 temp_cast_10 = (_Noise1Power).xxxx;
+					float4 temp_output_141_0 = saturate( pow( staticSwitch1911 , temp_cast_10 ) );
 					float4 Noise119 = temp_output_141_0;
 					#ifdef _USENOISE1_ON
 					float4 staticSwitch616 = Noise119;
@@ -1031,7 +1028,7 @@ Shader "Kuma/KumaEffect"
 					#else
 					float staticSwitch1321 = 1.0;
 					#endif
-					float4 temp_cast_12 = (staticSwitch1321).xxxx;
+					float4 temp_cast_11 = (staticSwitch1321).xxxx;
 					float2 appendResult72 = (float2(( ( randomIntesity456 * randomOffset1100 ) + _Noise2Panning.x ) , ( _Noise2Panning.y + ( randomIntensityY482 * randomOffset2101 ) )));
 					float2 appendResult219 = (float2(randomOffset1100 , randomOffset2101));
 					#ifdef _ISNOISE2POLAR_ON
@@ -1066,9 +1063,9 @@ Shader "Kuma/KumaEffect"
 					float2 In01520 = panner306;
 					float In11520 = _GenerateNoise2Strength;
 					float localUnityTiledGradientNoise1520 = UnityTiledGradientNoise( In01520 , In11520 );
-					float2 temp_cast_13 = (( saturate( localUnityTiledGradientNoise1520 ) + -0.5 )).xx;
+					float2 temp_cast_12 = (( saturate( localUnityTiledGradientNoise1520 ) + -0.5 )).xx;
 					#ifdef _USEGENERATENOISE2_ON
-					float2 staticSwitch310 = temp_cast_13;
+					float2 staticSwitch310 = temp_cast_12;
 					#else
 					float2 staticSwitch310 = ( saturate( appendResult1525 ) + float2( -0.5,-0.5 ) );
 					#endif
@@ -1087,30 +1084,27 @@ Shader "Kuma/KumaEffect"
 					float4 staticSwitch409 = tex2D( _Noise2, UV_Distortion2314 );
 					#endif
 					float4 break1914 = staticSwitch409;
-					float4 temp_cast_15 = (break1914.r).xxxx;
-					float4 temp_cast_16 = (break1914.g).xxxx;
-					float4 temp_cast_17 = (break1914.b).xxxx;
-					float4 temp_cast_18 = (break1914.a).xxxx;
+					float4 temp_cast_14 = (break1914.r).xxxx;
+					float4 temp_cast_15 = (break1914.g).xxxx;
+					float4 temp_cast_16 = (break1914.b).xxxx;
 					#if defined( _USENOISE2SPLITCOLORTEX_DEFAULT )
 					float4 staticSwitch1913 = staticSwitch409;
 					#elif defined( _USENOISE2SPLITCOLORTEX_R )
-					float4 staticSwitch1913 = temp_cast_15;
+					float4 staticSwitch1913 = temp_cast_14;
 					#elif defined( _USENOISE2SPLITCOLORTEX_G )
-					float4 staticSwitch1913 = temp_cast_16;
+					float4 staticSwitch1913 = temp_cast_15;
 					#elif defined( _USENOISE2SPLITCOLORTEX_B )
-					float4 staticSwitch1913 = temp_cast_17;
-					#elif defined( _USENOISE2SPLITCOLORTEX_A )
-					float4 staticSwitch1913 = temp_cast_18;
+					float4 staticSwitch1913 = temp_cast_16;
 					#else
 					float4 staticSwitch1913 = staticSwitch409;
 					#endif
-					float4 temp_cast_19 = (_Noise2Power).xxxx;
-					float4 temp_output_142_0 = saturate( pow( staticSwitch1913 , temp_cast_19 ) );
+					float4 temp_cast_17 = (_Noise2Power).xxxx;
+					float4 temp_output_142_0 = saturate( pow( staticSwitch1913 , temp_cast_17 ) );
 					float4 Noise218 = temp_output_142_0;
 					#ifdef _USENOISE2_ON
 					float4 staticSwitch618 = Noise218;
 					#else
-					float4 staticSwitch618 = temp_cast_12;
+					float4 staticSwitch618 = temp_cast_11;
 					#endif
 					#if defined( _NOISEMODE_MULTIPLY )
 					float4 staticSwitch1317 = saturate( ( staticSwitch616 * staticSwitch618 ) );
@@ -1174,9 +1168,9 @@ Shader "Kuma/KumaEffect"
 					float2 In01521 = panner327;
 					float In11521 = _GenerateNoiseDStrength;
 					float localUnityTiledGradientNoise1521 = UnityTiledGradientNoise( In01521 , In11521 );
-					float2 temp_cast_20 = (localUnityTiledGradientNoise1521).xx;
+					float2 temp_cast_18 = (localUnityTiledGradientNoise1521).xx;
 					#ifdef _USEGENERATENOISED_ON
-					float2 staticSwitch333 = temp_cast_20;
+					float2 staticSwitch333 = temp_cast_18;
 					#else
 					float2 staticSwitch333 = ( appendResult1527 + float2( -0.5,-0.5 ) );
 					#endif
@@ -1334,9 +1328,9 @@ Shader "Kuma/KumaEffect"
 					float2 In01522 = panner1184;
 					float In11522 = _GenerateNoiseMStrength;
 					float localUnityTiledGradientNoise1522 = UnityTiledGradientNoise( In01522 , In11522 );
-					float2 temp_cast_21 = (( temp_output_1189_0 * localUnityTiledGradientNoise1522 )).xx;
+					float2 temp_cast_19 = (( temp_output_1189_0 * localUnityTiledGradientNoise1522 )).xx;
 					#ifdef _USEGENERATENOISEM_ON
-					float2 staticSwitch1166 = temp_cast_21;
+					float2 staticSwitch1166 = temp_cast_19;
 					#else
 					float2 staticSwitch1166 = ( ( appendResult1529 + float2( -0.5,-0.5 ) ) * temp_output_1189_0 );
 					#endif
@@ -1449,8 +1443,8 @@ Shader "Kuma/KumaEffect"
 					float CellDensity609 = _VoronoiScale;
 					float3 localUnityTiledVoronoi609 = UnityTiledVoronoi( UV609 , AngleOffset609 , CellDensity609 );
 					float3 appendResult569 = (float3(localUnityTiledVoronoi611.x , localUnityTiledVoronoi610.x , localUnityTiledVoronoi609.x));
-					float3 temp_cast_32 = (_VoronoiPower).xxx;
-					float3 temp_output_603_0 = ( pow( appendResult569 , temp_cast_32 ) * _VoronoiIntensity );
+					float3 temp_cast_30 = (_VoronoiPower).xxx;
+					float3 temp_output_603_0 = ( pow( appendResult569 , temp_cast_30 ) * _VoronoiIntensity );
 					float4 appendResult1867 = (float4(temp_output_603_0 , temp_output_603_0.y));
 					float4 CACaustics588 = appendResult1867;
 					float4 appendResult629 = (float4(CACaustics588));
@@ -1490,47 +1484,47 @@ Shader "Kuma/KumaEffect"
 					float staticSwitch862 = 1.0;
 					#endif
 					float Ring853 = staticSwitch862;
-					float4 temp_cast_33 = (1.0).xxxx;
+					float4 temp_cast_31 = (1.0).xxxx;
 					float temp_output_775_0 =  (0.0 + ( _OutsideStrength - 0.0 ) * ( 0.1 - 0.0 ) / ( 1.0 - 0.0 ) );
 					float2 texCoord742 = IN.ase_texcoord3.xy * float2( 1,1 ) + float2( 0,0 );
 					float2 _Vector0 = float2(0.5,0.5);
-					float2 temp_cast_34 = (2.0).xx;
-					float2 break750 = pow( abs( ( texCoord742 - _Vector0 ) ) , temp_cast_34 );
+					float2 temp_cast_32 = (2.0).xx;
+					float2 break750 = pow( abs( ( texCoord742 - _Vector0 ) ) , temp_cast_32 );
 					float temp_output_755_0 = ( 1.0 - ( ( break750.x + break750.y ) *  (100.0 + ( _Size - 0.0 ) * ( 4.0 - 100.0 ) / ( 1.0 - 0.0 ) ) ) );
 					float temp_output_770_0 =  (50.0 + ( _OutsideSize - 0.0 ) * ( 2.0 - 50.0 ) / ( 1.0 - 0.0 ) );
 					float temp_output_765_0 =  (200.0 + ( _CenterSize - 0.0 ) * ( 2.0 - 200.0 ) / ( 1.0 - 0.0 ) );
 					float smoothstepResult766 = smoothstep( 0.0 , 0.33 , ( pow( temp_output_755_0 , temp_output_765_0 ) * _CenterStrength ));
 					float temp_output_935_0 = saturate( ( ( temp_output_775_0 * pow( temp_output_755_0 , temp_output_770_0 ) ) + smoothstepResult766 ) );
-					float4 temp_cast_35 = (temp_output_935_0).xxxx;
+					float4 temp_cast_33 = (temp_output_935_0).xxxx;
 					float2 appendResult1680 = (float2(_DustShapeCAOffsetX , _DustShapeCAOffsetY));
-					float2 temp_cast_36 = (2.0).xx;
-					float2 break1719 = pow( abs( ( texCoord742 - ( _Vector0 + ( appendResult1680 * float2( -1,-1 ) ) ) ) ) , temp_cast_36 );
+					float2 temp_cast_34 = (2.0).xx;
+					float2 break1719 = pow( abs( ( texCoord742 - ( _Vector0 + ( appendResult1680 * float2( -1,-1 ) ) ) ) ) , temp_cast_34 );
 					float temp_output_1738_0 = ( 1.0 - ( ( break1719.x + break1719.y ) *  (100.0 + ( _Size - 0.0 ) * ( 4.0 - 100.0 ) / ( 1.0 - 0.0 ) ) ) );
 					float Dust_Shape_Out_Size1705 = temp_output_770_0;
 					float Dust_Shape_Out_Strength1706 = temp_output_775_0;
 					float Dust_Shape_Center_Size1704 = temp_output_765_0;
 					float Dust_Shape_Center_Strength1707 = _CenterStrength;
 					float smoothstepResult1735 = smoothstep( 0.0 , 0.33 , ( pow( temp_output_1738_0 , Dust_Shape_Center_Size1704 ) * Dust_Shape_Center_Strength1707 ));
-					float2 temp_cast_37 = (2.0).xx;
-					float2 break1687 = pow( abs( ( texCoord742 - ( _Vector0 + appendResult1680 ) ) ) , temp_cast_37 );
+					float2 temp_cast_35 = (2.0).xx;
+					float2 break1687 = pow( abs( ( texCoord742 - ( _Vector0 + appendResult1680 ) ) ) , temp_cast_35 );
 					float temp_output_1698_0 = ( 1.0 - ( ( break1687.x + break1687.y ) *  (100.0 + ( _Size - 0.0 ) * ( 4.0 - 100.0 ) / ( 1.0 - 0.0 ) ) ) );
 					float smoothstepResult1714 = smoothstep( 0.0 , 0.33 , ( pow( temp_output_1698_0 , Dust_Shape_Center_Size1704 ) * Dust_Shape_Center_Strength1707 ));
 					float4 appendResult1675 = (float4(saturate( ( ( pow( temp_output_1738_0 , Dust_Shape_Out_Size1705 ) * Dust_Shape_Out_Strength1706 ) + smoothstepResult1735 ) ) , temp_output_935_0 , saturate( ( ( pow( temp_output_1698_0 , Dust_Shape_Out_Size1705 ) * Dust_Shape_Out_Strength1706 ) + smoothstepResult1714 ) ) , temp_output_935_0));
 					#ifdef _USEDUSTSHAPECA_ON
 					float4 staticSwitch1688 = appendResult1675;
 					#else
-					float4 staticSwitch1688 = temp_cast_35;
+					float4 staticSwitch1688 = temp_cast_33;
 					#endif
 					#ifdef _USEDUST_ON
 					float4 staticSwitch779 = staticSwitch1688;
 					#else
-					float4 staticSwitch779 = temp_cast_33;
+					float4 staticSwitch779 = temp_cast_31;
 					#endif
 					float4 Dust778 = staticSwitch779;
 					float2 texCoord875 = IN.ase_texcoord3.xy * float2( 1,1 ) + float2( 0,0 );
-					float2 temp_cast_38 = (0.5).xx;
-					float2 temp_cast_39 = (0.25).xx;
-					float2 break881 = pow( ( abs( ( texCoord875 - temp_cast_38 ) ) * 2.16 ) , temp_cast_39 );
+					float2 temp_cast_36 = (0.5).xx;
+					float2 temp_cast_37 = (0.25).xx;
+					float2 break881 = pow( ( abs( ( texCoord875 - temp_cast_36 ) ) * 2.16 ) , temp_cast_37 );
 					float smoothstepResult887 = smoothstep( -0.4 , 0.18 , ( 1.0 - pow( ( break881.x + break881.y ) , 1.99 ) ));
 					#ifdef _USEGLITTER_ON
 					float staticSwitch924 = ( ( smoothstepResult887 * pow( ( pow( saturate( ( texCoord875.x - 0.19 ) ) , 0.81 ) * pow( saturate( ( ( 1.0 - texCoord875.x ) - 0.19 ) ) , 0.81 ) * pow( saturate( ( texCoord875.y - 0.19 ) ) , 0.81 ) * pow( saturate( ( ( 1.0 - texCoord875.y ) - 0.19 ) ) , 0.81 ) ) , 0.57 ) ) * 8.0 );
@@ -1538,39 +1532,39 @@ Shader "Kuma/KumaEffect"
 					float staticSwitch924 = 1.0;
 					#endif
 					float Glitter889 = staticSwitch924;
-					float4 temp_cast_40 = (1.0).xxxx;
+					float4 temp_cast_38 = (1.0).xxxx;
 					float2 texCoord1746 = IN.ase_texcoord3.xy * float2( 1,1 ) + float2( 0,0 );
-					float4 temp_cast_41 = (( saturate( ( saturate( ( texCoord1746.x -  (-1.0 + ( _GradientWidthU - 0.0 ) * ( 1.0 - -1.0 ) / ( 1.0 - 0.0 ) ) ) ) * _GradientPowerU ) ) * saturate( ( saturate( ( ( 1.0 - texCoord1746.x ) -  (-1.0 + ( _GradientWidthOneMinusU - 0.0 ) * ( 1.0 - -1.0 ) / ( 1.0 - 0.0 ) ) ) ) * _GradientPowerOneMinusU ) ) * saturate( ( saturate( ( texCoord1746.y -  (-1.0 + ( _GradientWidthV - 0.0 ) * ( 1.0 - -1.0 ) / ( 1.0 - 0.0 ) ) ) ) * _GradientPowerV ) ) * saturate( ( saturate( ( ( 1.0 - texCoord1746.y ) -  (-1.0 + ( _GradientWidthOneMinusV - 0.0 ) * ( 1.0 - -1.0 ) / ( 1.0 - 0.0 ) ) ) ) * _GradientPowerOneMinusV ) ) )).xxxx;
+					float4 temp_cast_39 = (( saturate( ( saturate( ( texCoord1746.x -  (-1.0 + ( _GradientWidthU - 0.0 ) * ( 1.0 - -1.0 ) / ( 1.0 - 0.0 ) ) ) ) * _GradientPowerU ) ) * saturate( ( saturate( ( ( 1.0 - texCoord1746.x ) -  (-1.0 + ( _GradientWidthOneMinusU - 0.0 ) * ( 1.0 - -1.0 ) / ( 1.0 - 0.0 ) ) ) ) * _GradientPowerOneMinusU ) ) * saturate( ( saturate( ( texCoord1746.y -  (-1.0 + ( _GradientWidthV - 0.0 ) * ( 1.0 - -1.0 ) / ( 1.0 - 0.0 ) ) ) ) * _GradientPowerV ) ) * saturate( ( saturate( ( ( 1.0 - texCoord1746.y ) -  (-1.0 + ( _GradientWidthOneMinusV - 0.0 ) * ( 1.0 - -1.0 ) / ( 1.0 - 0.0 ) ) ) ) * _GradientPowerOneMinusV ) ) )).xxxx;
 					float2 appendResult953 = (float2(randomOffset1100 , randomOffset2101));
 					float2 texCoord954 = IN.ase_texcoord3.xy * _GradientMaskTilling + appendResult953;
 					float2 panner956 = ( 1.0 * _Time.y * _GradientMaskPanning + texCoord954);
-					float4 temp_cast_42 = (_MaskNoisePower).xxxx;
-					float4 temp_output_962_0 = pow( tex2D( _GradientNoiseMap, panner956 ) , temp_cast_42 );
+					float4 temp_cast_40 = (_MaskNoisePower).xxxx;
+					float4 temp_output_962_0 = pow( tex2D( _GradientNoiseMap, panner956 ) , temp_cast_40 );
 					float2 texCoord957 = IN.ase_texcoord3.xy * float2( 1,1 ) + float2( 0,0 );
 					float temp_output_963_0 = ( 1.0 - texCoord957.x );
-					float4 temp_cast_43 = (texCoord957.x).xxxx;
+					float4 temp_cast_41 = (texCoord957.x).xxxx;
 					float temp_output_969_0 =  (2.0 + ( _HorizontalLength - 0.0 ) * ( -1.0 - 2.0 ) / ( 1.0 - 0.0 ) );
+					float4 temp_cast_42 = (temp_output_969_0).xxxx;
+					float4 temp_cast_43 = (temp_output_963_0).xxxx;
 					float4 temp_cast_44 = (temp_output_969_0).xxxx;
-					float4 temp_cast_45 = (temp_output_963_0).xxxx;
-					float4 temp_cast_46 = (temp_output_969_0).xxxx;
 					float2 texCoord1001 = IN.ase_texcoord3.xy * float2( 1,1 ) + float2( 0,0 );
 					float temp_output_1000_0 = ( 1.0 - texCoord1001.y );
-					float4 temp_cast_47 = (texCoord1001.y).xxxx;
+					float4 temp_cast_45 = (texCoord1001.y).xxxx;
 					float temp_output_986_0 =  (2.0 + ( _VerticalLength - 0.0 ) * ( -1.0 - 2.0 ) / ( 1.0 - 0.0 ) );
+					float4 temp_cast_46 = (temp_output_986_0).xxxx;
+					float4 temp_cast_47 = (temp_output_1000_0).xxxx;
 					float4 temp_cast_48 = (temp_output_986_0).xxxx;
-					float4 temp_cast_49 = (temp_output_1000_0).xxxx;
-					float4 temp_cast_50 = (temp_output_986_0).xxxx;
 					#if defined( _GRADIENTMODE_LATEST )
-					float4 staticSwitch1786 = temp_cast_41;
+					float4 staticSwitch1786 = temp_cast_39;
 					#elif defined( _GRADIENTMODE_OLD )
-					float4 staticSwitch1786 = ( saturate( ( ( ( ( temp_output_962_0 + ( temp_output_963_0 * _HorizontalBorder ) ) - temp_cast_43 ) - temp_cast_44 ) * ( ( ( temp_output_962_0 + ( texCoord957.x * _HorizontalBorder ) ) - temp_cast_45 ) - temp_cast_46 ) ) ) * saturate( ( ( ( ( temp_output_962_0 + ( temp_output_1000_0 * _VerticalBorder ) ) - temp_cast_47 ) - temp_cast_48 ) * ( ( ( temp_output_962_0 + ( texCoord1001.y * _VerticalBorder ) ) - temp_cast_49 ) - temp_cast_50 ) ) ) );
+					float4 staticSwitch1786 = ( saturate( ( ( ( ( temp_output_962_0 + ( temp_output_963_0 * _HorizontalBorder ) ) - temp_cast_41 ) - temp_cast_42 ) * ( ( ( temp_output_962_0 + ( texCoord957.x * _HorizontalBorder ) ) - temp_cast_43 ) - temp_cast_44 ) ) ) * saturate( ( ( ( ( temp_output_962_0 + ( temp_output_1000_0 * _VerticalBorder ) ) - temp_cast_45 ) - temp_cast_46 ) * ( ( ( temp_output_962_0 + ( texCoord1001.y * _VerticalBorder ) ) - temp_cast_47 ) - temp_cast_48 ) ) ) );
 					#else
-					float4 staticSwitch1786 = temp_cast_41;
+					float4 staticSwitch1786 = temp_cast_39;
 					#endif
 					#ifdef _USEGRADIENTMASK_ON
 					float4 staticSwitch1005 = staticSwitch1786;
 					#else
-					float4 staticSwitch1005 = temp_cast_40;
+					float4 staticSwitch1005 = temp_cast_38;
 					#endif
 					float4 GradientMask1006 = staticSwitch1005;
 					float2 appendResult1148 = (float2(( ( randomOffset1100 * randomIntesity456 ) + _AlphaFadePanning.x ) , ( _AlphaFadePanning.y + ( randomOffset2101 * randomIntensityY482 ) )));
@@ -1604,25 +1598,25 @@ Shader "Kuma/KumaEffect"
 					#endif
 					float AlphaFade1025 = staticSwitch1053;
 					float4 temp_output_857_0 = ( staticSwitch278 * Ring853 * Dust778 * Glitter889 * GradientMask1006 * AlphaFade1025 );
-					float3 temp_cast_52 = (_ShadowsRange).xxx;
+					float3 temp_cast_50 = (_ShadowsRange).xxx;
 					float4 break1848 = temp_output_857_0;
 					float3 appendResult1872 = (float3(break1848.y , break1848.y , break1848.y));
-					float3 temp_cast_53 = (( _ShadowsRange + _DarktonesRange )).xxx;
-					float3 temp_output_1822_0 = max( float3( 0,0,0 ) , step( temp_cast_53 , appendResult1872 ) );
-					float3 temp_cast_54 = (( _ShadowsRange + _MidtonesRange )).xxx;
-					float3 temp_output_1823_0 = max( float3( 0,0,0 ) , step( temp_cast_54 , appendResult1872 ) );
-					float3 temp_cast_55 = (( _ShadowsRange + _BrightsRange )).xxx;
-					float3 temp_output_1824_0 = max( float3( 0,0,0 ) , step( temp_cast_55 , appendResult1872 ) );
-					float3 temp_cast_56 = (( _ShadowsRange + _HighlightsRange )).xxx;
-					float3 temp_output_1825_0 = max( float3( 0,0,0 ) , step( temp_cast_56 , appendResult1872 ) );
-					float4 appendResult1845 = (float4(( ( _ShadowsColor.rgb * saturate( ( step( temp_cast_52 , appendResult1872 ) - temp_output_1822_0 ) ) ) + ( saturate( ( temp_output_1822_0 - temp_output_1823_0 ) ) * _DarktonesColor.rgb ) + ( saturate( ( temp_output_1823_0 - temp_output_1824_0 ) ) * _MidtonesColor.rgb ) + ( saturate( ( temp_output_1824_0 - temp_output_1825_0 ) ) * _BrightsColor.rgb ) + ( temp_output_1825_0 * _HighlightsColor.rgb ) ) , break1848.w));
+					float3 temp_cast_51 = (( _ShadowsRange + _DarktonesRange )).xxx;
+					float3 temp_output_1822_0 = max( float3( 0,0,0 ) , step( temp_cast_51 , appendResult1872 ) );
+					float3 temp_cast_52 = (( _ShadowsRange + _MidtonesRange )).xxx;
+					float3 temp_output_1823_0 = max( float3( 0,0,0 ) , step( temp_cast_52 , appendResult1872 ) );
+					float3 temp_cast_53 = (( _ShadowsRange + _BrightsRange )).xxx;
+					float3 temp_output_1824_0 = max( float3( 0,0,0 ) , step( temp_cast_53 , appendResult1872 ) );
+					float3 temp_cast_54 = (( _ShadowsRange + _HighlightsRange )).xxx;
+					float3 temp_output_1825_0 = max( float3( 0,0,0 ) , step( temp_cast_54 , appendResult1872 ) );
+					float4 appendResult1845 = (float4(( ( _ShadowsColor.rgb * saturate( ( step( temp_cast_50 , appendResult1872 ) - temp_output_1822_0 ) ) ) + ( saturate( ( temp_output_1822_0 - temp_output_1823_0 ) ) * _DarktonesColor.rgb ) + ( saturate( ( temp_output_1823_0 - temp_output_1824_0 ) ) * _MidtonesColor.rgb ) + ( saturate( ( temp_output_1824_0 - temp_output_1825_0 ) ) * _BrightsColor.rgb ) + ( temp_output_1825_0 * _HighlightsColor.rgb ) ) , break1848.w));
 					#ifdef _USE5TONES_ON
 					float4 staticSwitch1847 = appendResult1845;
 					#else
 					float4 staticSwitch1847 = temp_output_857_0;
 					#endif
-					float4 temp_cast_58 = (1.0).xxxx;
-					float3 temp_cast_59 = (1.0).xxx;
+					float4 temp_cast_56 = (1.0).xxxx;
+					float3 temp_cast_57 = (1.0).xxx;
 					float3 ase_viewDirSafeWS = Unity_SafeNormalize( ase_viewVectorWS );
 					float3 break1332 = ( float3( -1,-1,-1 ) * ase_viewDirSafeWS );
 					float3 appendResult1338 = (float3(break1332.y , break1332.x , break1332.z));
@@ -1643,18 +1637,18 @@ Shader "Kuma/KumaEffect"
 					float3 break1354 = localRotateAroundYInDegrees1352;
 					float3 appendResult1353 = (float3(break1354.x , break1354.z , break1354.y));
 					float3 CubeMapUV1344 = appendResult1353;
-					float3 lerpResult1315 = lerp( temp_cast_59 , texCUBE( _CubeMap, CubeMapUV1344 ).rgb , _CubeMapIntensity);
+					float3 lerpResult1315 = lerp( temp_cast_57 , texCUBE( _CubeMap, CubeMapUV1344 ).rgb , _CubeMapIntensity);
 					float4 appendResult1866 = (float4(lerpResult1315 , 1.0));
 					#ifdef _USECUBEMAP_ON
 					float4 staticSwitch1300 = appendResult1866;
 					#else
-					float4 staticSwitch1300 = temp_cast_58;
+					float4 staticSwitch1300 = temp_cast_56;
 					#endif
-					float3 temp_cast_61 = (1.0).xxx;
-					float3 temp_cast_62 = (0.1).xxx;
+					float3 temp_cast_59 = (1.0).xxx;
+					float3 temp_cast_60 = (0.1).xxx;
 					float3 normalizeResult1218 = normalize( ase_normalWS );
 					float3 worldNormal2_g243 = normalizeResult1218;
-					float3 temp_cast_63 = (1.0).xxx;
+					float3 temp_cast_61 = (1.0).xxx;
 					float localLightVolumeSH1_g241 = ( 0.0 );
 					float3 temp_output_6_0_g241 = ase_positionWS;
 					float3 worldPos1_g241 = temp_output_6_0_g241;
@@ -1679,11 +1673,11 @@ Shader "Kuma/KumaEffect"
 					#ifdef _LIGHTVOLUMES_ON
 					float3 staticSwitch1227 = staticSwitch1204;
 					#else
-					float3 staticSwitch1227 = temp_cast_63;
+					float3 staticSwitch1227 = temp_cast_61;
 					#endif
 					float3 L01212 = staticSwitch1227;
 					float3 L02_g243 = L01212;
-					float3 temp_cast_64 = (1.0).xxx;
+					float3 temp_cast_62 = (1.0).xxx;
 					#ifdef _ADDITIVEONLY_ON
 					float3 staticSwitch1201 = L1r1_g242;
 					#else
@@ -1692,11 +1686,11 @@ Shader "Kuma/KumaEffect"
 					#ifdef _LIGHTVOLUMES_ON
 					float3 staticSwitch1206 = staticSwitch1201;
 					#else
-					float3 staticSwitch1206 = temp_cast_64;
+					float3 staticSwitch1206 = temp_cast_62;
 					#endif
 					float3 L1r1209 = staticSwitch1206;
 					float3 L1r2_g243 = L1r1209;
-					float3 temp_cast_65 = (1.0).xxx;
+					float3 temp_cast_63 = (1.0).xxx;
 					#ifdef _ADDITIVEONLY_ON
 					float3 staticSwitch1202 = L1g1_g242;
 					#else
@@ -1705,11 +1699,11 @@ Shader "Kuma/KumaEffect"
 					#ifdef _LIGHTVOLUMES_ON
 					float3 staticSwitch1207 = staticSwitch1202;
 					#else
-					float3 staticSwitch1207 = temp_cast_65;
+					float3 staticSwitch1207 = temp_cast_63;
 					#endif
 					float3 L1g1210 = staticSwitch1207;
 					float3 L1g2_g243 = L1g1210;
-					float3 temp_cast_66 = (1.0).xxx;
+					float3 temp_cast_64 = (1.0).xxx;
 					#ifdef _ADDITIVEONLY_ON
 					float3 staticSwitch1203 = L1b1_g242;
 					#else
@@ -1718,16 +1712,16 @@ Shader "Kuma/KumaEffect"
 					#ifdef _LIGHTVOLUMES_ON
 					float3 staticSwitch1208 = staticSwitch1203;
 					#else
-					float3 staticSwitch1208 = temp_cast_66;
+					float3 staticSwitch1208 = temp_cast_64;
 					#endif
 					float3 L1b1211 = staticSwitch1208;
 					float3 L1b2_g243 = L1b1211;
 					float3 localLightVolumeEvaluate2_g243 = LightVolumeEvaluate( worldNormal2_g243 , L02_g243 , L1r2_g243 , L1g2_g243 , L1b2_g243 );
-					float3 lerpResult1231 = lerp( temp_cast_62 , localLightVolumeEvaluate2_g243 , _LVColorMultiplier);
+					float3 lerpResult1231 = lerp( temp_cast_60 , localLightVolumeEvaluate2_g243 , _LVColorMultiplier);
 					#ifdef _LIGHTVOLUMES_ON
 					float3 staticSwitch1205 = lerpResult1231;
 					#else
-					float3 staticSwitch1205 = temp_cast_61;
+					float3 staticSwitch1205 = temp_cast_59;
 					#endif
 					float4 appendResult1865 = (float4(staticSwitch1205 , 1.0));
 					float4 LVEvaluate1220 = appendResult1865;
@@ -2123,7 +2117,7 @@ Node;AmplifyShaderEditor.StaticSwitch, AmplifyShaderEditor, Version=0.0.0.0, Cul
 Node;AmplifyShaderEditor.StaticSwitch, AmplifyShaderEditor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null;409;-6944,-5360;Inherit;False;Property;_isNoise2Polar;isNoise2Polar;97;0;Create;True;0;0;0;False;0;False;0;0;0;True;;Toggle;2;Key0;Key1;Create;True;True;All;9;1;COLOR;0,0,0,0;False;0;COLOR;0,0,0,0;False;2;COLOR;0,0,0,0;False;3;COLOR;0,0,0,0;False;4;COLOR;0,0,0,0;False;5;COLOR;0,0,0,0;False;6;COLOR;0,0,0,0;False;7;COLOR;0,0,0,0;False;8;COLOR;0,0,0,0;False;1;COLOR;0
 Node;AmplifyShaderEditor.StaticSwitch, AmplifyShaderEditor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null;404;-6592,-7232;Inherit;False;Property;_isNoise1Polar;isNoise1Polar;96;0;Create;True;0;0;0;False;0;False;0;0;0;True;;Toggle;2;Key0;Key1;Create;True;True;All;9;1;COLOR;0,0,0,0;False;0;COLOR;0,0,0,0;False;2;COLOR;0,0,0,0;False;3;COLOR;0,0,0,0;False;4;COLOR;0,0,0,0;False;5;COLOR;0,0,0,0;False;6;COLOR;0,0,0,0;False;7;COLOR;0,0,0,0;False;8;COLOR;0,0,0,0;False;1;COLOR;0
 Node;AmplifyShaderEditor.BreakToComponentsNode, AmplifyShaderEditor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null;1912;-6192,-7088;Inherit;False;COLOR;1;0;COLOR;0,0,0,0;False;16;FLOAT;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4;FLOAT;5;FLOAT;6;FLOAT;7;FLOAT;8;FLOAT;9;FLOAT;10;FLOAT;11;FLOAT;12;FLOAT;13;FLOAT;14;FLOAT;15
-Node;AmplifyShaderEditor.BreakToComponentsNode, AmplifyShaderEditor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null;1914;-6576,-5216;Inherit;False;COLOR;1;0;COLOR;0,0,0,0;False;16;FLOAT;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4;FLOAT;5;FLOAT;6;FLOAT;7;FLOAT;8;FLOAT;9;FLOAT;10;FLOAT;11;FLOAT;12;FLOAT;13;FLOAT;14;FLOAT;15
+Node;AmplifyShaderEditor.BreakToComponentsNode, AmplifyShaderEditor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null;1914;-6560,-5280;Inherit;False;COLOR;1;0;COLOR;0,0,0,0;False;16;FLOAT;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4;FLOAT;5;FLOAT;6;FLOAT;7;FLOAT;8;FLOAT;9;FLOAT;10;FLOAT;11;FLOAT;12;FLOAT;13;FLOAT;14;FLOAT;15
 Node;AmplifyShaderEditor.NormalizeNode, AmplifyShaderEditor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null;1513;3056,480;Inherit;False;False;1;0;FLOAT3;0,0,0;False;1;FLOAT3;0
 Node;AmplifyShaderEditor.NormalizeNode, AmplifyShaderEditor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null;1567;3056,672;Inherit;False;False;1;0;FLOAT3;0,0,0;False;1;FLOAT3;0
 Node;AmplifyShaderEditor.TexCoordVertexDataNode, AmplifyShaderEditor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null;378;-464,-5200;Inherit;False;2;4;0;5;FLOAT4;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
@@ -2145,8 +2139,8 @@ Node;AmplifyShaderEditor.RegisterLocalVarNode, AmplifyShaderEditor, Version=0.0.
 Node;AmplifyShaderEditor.CustomExpressionNode, AmplifyShaderEditor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null;1369;1088,8912;Inherit;False; ;1;File;2;True;In0;FLOAT2;0,0;In;;Inherit;False;True;In1;FLOAT;0;In;;Inherit;False;UnityTiledGradientNoise;False;False;0;a839f3563020d86428878e0d6db33d75;False;2;0;FLOAT2;0,0;False;1;FLOAT;0;False;1;FLOAT;0
 Node;AmplifyShaderEditor.RangedFloatNode, AmplifyShaderEditor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null;22;-5200,-7056;Inherit;False;Property;_Noise1Power;Noise1Power;29;0;Create;True;0;0;0;False;0;False;1;3.57;0;6;0;1;FLOAT;0
 Node;AmplifyShaderEditor.RangedFloatNode, AmplifyShaderEditor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null;23;-5840,-5120;Inherit;False;Property;_Noise2Power;Noise2Power;36;0;Create;True;0;0;0;False;0;False;1;-2.07;0;6;0;1;FLOAT;0
-Node;AmplifyShaderEditor.StaticSwitch, AmplifyShaderEditor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null;1911;-5904,-7232;Inherit;False;Property;_UseNoise1SplitColorTex;UseNoise1SplitColorTex;224;0;Create;True;0;0;0;False;0;False;0;0;0;True;;KeywordEnum;5;Default;R;G;B;A;Create;True;True;All;9;1;COLOR;0,0,0,0;False;0;COLOR;0,0,0,0;False;2;COLOR;0,0,0,0;False;3;COLOR;0,0,0,0;False;4;COLOR;0,0,0,0;False;5;COLOR;0,0,0,0;False;6;COLOR;0,0,0,0;False;7;COLOR;0,0,0,0;False;8;COLOR;0,0,0,0;False;1;COLOR;0
-Node;AmplifyShaderEditor.StaticSwitch, AmplifyShaderEditor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null;1913;-6288,-5360;Inherit;False;Property;_UseNoise2SplitColorTex;UseNoise2SplitColorTex;225;0;Create;True;0;0;0;False;0;False;0;0;0;True;;KeywordEnum;5;Default;R;G;B;A;Create;True;True;All;9;1;COLOR;0,0,0,0;False;0;COLOR;0,0,0,0;False;2;COLOR;0,0,0,0;False;3;COLOR;0,0,0,0;False;4;COLOR;0,0,0,0;False;5;COLOR;0,0,0,0;False;6;COLOR;0,0,0,0;False;7;COLOR;0,0,0,0;False;8;COLOR;0,0,0,0;False;1;COLOR;0
+Node;AmplifyShaderEditor.StaticSwitch, AmplifyShaderEditor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null;1913;-6288,-5360;Inherit;False;Property;_UseNoise2SplitColorTex;UseNoise2SplitColorTex;225;0;Create;True;0;0;0;False;0;False;0;0;0;True;;KeywordEnum;4;Default;R;G;B;Create;True;True;All;9;1;COLOR;0,0,0,0;False;0;COLOR;0,0,0,0;False;2;COLOR;0,0,0,0;False;3;COLOR;0,0,0,0;False;4;COLOR;0,0,0,0;False;5;COLOR;0,0,0,0;False;6;COLOR;0,0,0,0;False;7;COLOR;0,0,0,0;False;8;COLOR;0,0,0,0;False;1;COLOR;0
+Node;AmplifyShaderEditor.StaticSwitch, AmplifyShaderEditor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null;1911;-5904,-7232;Inherit;False;Property;_UseNoise1SplitColorTex;UseNoise1SplitColorTex;224;0;Create;True;0;0;0;False;0;False;0;0;0;True;;KeywordEnum;4;Default;R;G;B;Create;True;True;All;9;1;COLOR;0,0,0,0;False;0;COLOR;0,0,0,0;False;2;COLOR;0,0,0,0;False;3;COLOR;0,0,0,0;False;4;COLOR;0,0,0,0;False;5;COLOR;0,0,0,0;False;6;COLOR;0,0,0,0;False;7;COLOR;0,0,0,0;False;8;COLOR;0,0,0,0;False;1;COLOR;0
 Node;AmplifyShaderEditor.DotProductOpNode, AmplifyShaderEditor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null;541;3306.048,475.5349;Inherit;True;2;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;1;FLOAT;0
 Node;AmplifyShaderEditor.CustomExpressionNode, AmplifyShaderEditor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null;377;-128,-5088;Inherit;False;#if defined(UNITY_PARTICLE_INSTANCING_ENABLED)$$UNITY_PARTICLE_INSTANCE_DATA data = unity_ParticleInstanceData[unity_InstanceID]@$$return data.custom2XY.y@$$#else$return In0@$#endif;1;Create;1;True;In0;FLOAT;0;In;;Inherit;False;InstancingOffsetY;False;False;0;;False;1;0;FLOAT;0;False;1;FLOAT;0
 Node;AmplifyShaderEditor.CustomExpressionNode, AmplifyShaderEditor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null;374;-128,-5184;Inherit;False;#if defined(UNITY_PARTICLE_INSTANCING_ENABLED)$$UNITY_PARTICLE_INSTANCE_DATA data = unity_ParticleInstanceData[unity_InstanceID]@$$return data.custom2XY.x@$$#else$return In0@$#endif;1;Create;1;True;In0;FLOAT;0;In;;Inherit;False;InstancingOffsetX;False;False;0;;False;1;0;FLOAT;0;False;1;FLOAT;0
@@ -3335,16 +3329,14 @@ WireConnection;1466;1;1455;0
 WireConnection;1364;0;1440;0
 WireConnection;1369;0;1368;0
 WireConnection;1369;1;1367;0
-WireConnection;1911;1;404;0
-WireConnection;1911;0;1912;0
-WireConnection;1911;2;1912;1
-WireConnection;1911;3;1912;2
-WireConnection;1911;4;1912;3
 WireConnection;1913;1;409;0
 WireConnection;1913;0;1914;0
 WireConnection;1913;2;1914;1
 WireConnection;1913;3;1914;2
-WireConnection;1913;4;1914;3
+WireConnection;1911;1;404;0
+WireConnection;1911;0;1912;0
+WireConnection;1911;2;1912;1
+WireConnection;1911;3;1912;2
 WireConnection;541;0;1513;0
 WireConnection;541;1;1567;0
 WireConnection;377;0;378;2
@@ -4297,4 +4289,4 @@ WireConnection;1200;2;1193;4
 WireConnection;200;0;357;0
 WireConnection;200;1;712;0
 ASEEND*/
-//CHKSM=E86A31879D360DE4D1D38E894D5892B8E9C7BD6A
+//CHKSM=B5C804C6BF43397562D6CEEAFDE762183F9D9A0D
